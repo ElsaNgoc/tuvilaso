@@ -1,0 +1,85 @@
+{
+    "module": "TuVi_TanBien",
+    "topic": "Luc_Sat_Tinh",
+    "nguyen_tac_cot_loi": "Lục sát tinh chủ về sát phạt, phá tán, mang lại sự liều lĩnh, tai họa hoặc bệnh tật. Tuy nhiên, nếu đắc địa, chúng tạo ra sự can đảm, dũng mãnh, hoạnh phát quyền lực hoặc tiền tài, dù sự nghiệp thường thăng trầm.",
+    "danh_sach_sao": [
+      {
+        "sao": "Kình Dương",
+        "ngu_hanh": "Dương Kim đới Hỏa",
+        "loai": "Hình tinh (Sát tinh)",
+        "chu_de": "Sát phạt",
+        "dac_dia": {
+          "vi_tri": ["Thìn", "Tuất", "Sửu", "Mùi"],
+          "y_nghia": "Can đảm, dũng mãnh, quả quyết, thích nhanh chóng, sỗ sàng."
+        },
+        "ham_dia": {
+          "y_nghia": "Liều lĩnh, hung bạo, độc ác hay giết chóc phá hoại, gây tai họa, bệnh tật."
+        }
+      },
+      {
+        "sao": "Đà La",
+        "ngu_hanh": "Âm Kim đới Hỏa",
+        "loai": "Kỵ tinh (Sát tinh)",
+        "chu_de": "Sát phạt",
+        "dac_dia": {
+          "vi_tri": ["Thìn", "Tuất", "Sửu", "Mùi"],
+          "y_nghia": "Can đảm, dũng mãnh, quả quyết, thích nhanh chóng, sỗ sàng. Có thâm trầm, mưu cơ, thủ đoạn."
+        },
+        "ham_dia": {
+          "y_nghia": "Liều lĩnh, hung bạo, độc ác hay giết chóc phá hoại, gây tai họa, bệnh tật. Gian hiểm, dâm dật, trong mình thường có tỳ vết hay có nhiều rỗ sẹo."
+        }
+      },
+      {
+        "sao": "Hỏa Tinh",
+        "ngu_hanh": "Dương Hỏa đới Kim",
+        "loai": "Đoản thọ Sát tinh",
+        "chu_de": "Sát phạt",
+        "dac_dia": {
+          "vi_tri": ["Dần", "Mão", "Thìn", "Tỵ", "Ngọ"],
+          "y_nghia": "Can đảm, dũng mãnh, có chí khí hiên ngang, sức khỏe dồi dào và ít khi mắc tai nạn. Thâm trầm, nham hiểm."
+        },
+        "ham_dia": {
+          "y_nghia": "Thâm hiểm, gian ác và rất liều lĩnh, thường mắc bệnh thần kinh hay khí huyết nên sức khỏe càng ngày càng suy kém. Suốt đời cùng khổ, hay giết chóc, đốt phá."
+        }
+      },
+      {
+        "sao": "Linh Tinh",
+        "ngu_hanh": "Âm Hỏa đới Kim",
+        "loai": "Đoản thọ Sát tinh",
+        "chu_de": "Sát phạt",
+        "dac_dia": {
+          "vi_tri": ["Dần", "Mão", "Thìn", "Tỵ", "Ngọ"],
+          "y_nghia": "Can đảm, dũng mãnh, có chí khí hiên ngang, sức khỏe dồi dào và ít khi mắc tai nạn. Thâm trầm, nham hiểm."
+        },
+        "ham_dia": {
+          "y_nghia": "Thâm hiểm, gian ác và rất liều lĩnh, thường mắc bệnh thần kinh hay khí huyết nên sức khỏe càng ngày càng suy kém, khó tránh tai họa khủng khiếp. Hay giết chóc, đốt phá."
+        }
+      },
+      {
+        "sao": "Địa Không",
+        "ngu_hanh": "Âm Hỏa",
+        "loai": "Sát tinh",
+        "chu_de": "Sát, phá tán",
+        "dac_dia": {
+          "vi_tri": ["Dần", "Thân", "Tỵ", "Hợi"],
+          "y_nghia": "Thâm trầm, gian quyệt, hoạnh phát, hoạnh phá. Kín đáo hay suy xét, có mưu trí và rất can đảm nhưng sự nghiệp thăng trầm, giàu sang như đám mây nổi vật vờ."
+        },
+        "ham_dia": {
+          "y_nghia": "Bạo ngược, gian ác, phá tán hay gây bệnh tật, tai họa. Gian tà, xảo quyệt, ích kỷ và biển lận, suốt đời chẳng mấy khi được xứng ý toại lòng, lại thường mang tật trong mình."
+        }
+      },
+      {
+        "sao": "Địa Kiếp",
+        "ngu_hanh": "Dương Hỏa",
+        "loai": "Sát tinh",
+        "chu_de": "Sát, phá tán",
+        "dac_dia": {
+          "vi_tri": ["Dần", "Thân", "Tỵ", "Hợi"],
+          "y_nghia": "Thâm trầm, gian quyệt, hoạnh phát, hoạnh phá. Kín đáo hay suy xét, có mưu trí và rất can đảm nhưng sự nghiệp thăng trầm, giàu sang như đám mây nổi vật vờ."
+        },
+        "ham_dia": {
+          "y_nghia": "Bạo ngược, gian ác, phá tán hay gây bệnh tật, tai họa. Gian tà, xảo quyệt, ích kỷ và biển lận, suốt đời chẳng mấy khi được xứng ý toại lòng, lại thường mang tật trong mình."
+        }
+      }
+    ]
+  }

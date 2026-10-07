@@ -1,0 +1,52 @@
+{
+    "module": "TuTru_ThienCan",
+    "ngu_hanh_co_ban": {
+      "tuong_sinh": [
+        "Kim sinh Thủy", 
+        "Thủy sinh Mộc", 
+        "Mộc sinh Hỏa", 
+        "Hỏa sinh Thổ", 
+        "Thổ sinh Kim"
+      ],
+      "tuong_khac": [
+        "Kim khắc Mộc", 
+        "Mộc khắc Thổ", 
+        "Thổ khắc Thủy", 
+        "Thủy khắc Hỏa", 
+        "Hỏa khắc Kim"
+      ]
+    },
+    "thap_thien_can": {
+      "Giáp": { "am_duong": "Dương", "ngu_hanh": "Mộc" },
+      "Ất": { "am_duong": "Âm", "ngu_hanh": "Mộc" },
+      "Bính": { "am_duong": "Dương", "ngu_hanh": "Hỏa" },
+      "Đinh": { "am_duong": "Âm", "ngu_hanh": "Hỏa" },
+      "Mậu": { "am_duong": "Dương", "ngu_hanh": "Thổ" },
+      "Kỷ": { "am_duong": "Âm", "ngu_hanh": "Thổ" },
+      "Canh": { "am_duong": "Dương", "ngu_hanh": "Kim" },
+      "Tân": { "am_duong": "Âm", "ngu_hanh": "Kim" },
+      "Nhâm": { "am_duong": "Dương", "ngu_hanh": "Thủy" },
+      "Qúy": { "am_duong": "Âm", "ngu_hanh": "Thủy" }
+    },
+    "tuong_tac_thien_can": {
+      "tuong_hop": [
+        {"can_1": "Giáp", "can_2": "Kỷ"},
+        {"can_1": "Ất", "can_2": "Canh"},
+        {"can_1": "Bính", "can_2": "Tân"},
+        {"can_1": "Đinh", "can_2": "Nhâm"},
+        {"can_1": "Mậu", "can_2": "Qúy"}
+      ],
+      "tuong_pha": [
+        {"can_pha": "Giáp", "can_bi_pha": "Mậu"},
+        {"can_pha": "Kỷ", "can_bi_pha": "Qúy"},
+        {"can_pha": "Ất", "can_bi_pha": "Kỷ"},
+        {"can_pha": "Canh", "can_bi_pha": "Giáp"},
+        {"can_pha": "Bính", "can_bi_pha": "Canh"},
+        {"can_pha": "Tân", "can_bi_pha": "Ất"},
+        {"can_pha": "Đinh", "can_bi_pha": "Tân"},
+        {"can_pha": "Nhâm", "can_bi_pha": "Bính"},
+        {"can_pha": "Mậu", "can_bi_pha": "Nhâm"},
+        {"can_pha": "Qúy", "can_bi_pha": "Đinh"}
+      ]
+    }
+  }

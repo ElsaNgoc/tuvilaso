@@ -1,0 +1,53 @@
+{
+    "module": "TrachCat_XemNgay",
+    "thap_nhi_truc": {
+      "Kiến": {
+        "cat_hung": "Hung",
+        "y_nghia": "Khí mới sinh, vạn vật chưa vững. Kỵ khai trương, xuất hành, cưới hỏi. Chỉ hợp nhậm chức."
+      },
+      "Trừ": {
+        "cat_hung": "Cát",
+        "y_nghia": "Trừ cựu nghênh tân (bỏ cũ đón mới). Tốt cho dọn dẹp, chữa bệnh, xả xui, tế tự."
+      },
+      "Mãn": {
+        "cat_hung": "Cát",
+        "y_nghia": "Đầy đủ, viên mãn. Rất tốt cho cầu tài, nhậm chức, cưới hỏi, thu tiền. Kỵ uống thuốc."
+      },
+      "Bình": {
+        "cat_hung": "Bình",
+        "y_nghia": "Bình yên, cân bằng. Tốt cho sửa chữa, lợp mái nhà, dời chỗ, san lấp đường xá."
+      },
+      "Định": {
+        "cat_hung": "Cát",
+        "y_nghia": "Định yên, cố định. Tốt cho an giường, giao dịch, nạp tài, ký kết hợp đồng dài hạn."
+      },
+      "Chấp": {
+        "cat_hung": "Bình",
+        "y_nghia": "Cố chấp, giữ gìn. Tốt cho xây dựng, tu tạo. Kỵ xuất hành, dời nhà, khai thông tài khoản."
+      },
+      "Phá": {
+        "cat_hung": "Hung",
+        "y_nghia": "Phá hao, vỡ lở. Kỵ mọi việc lớn, chỉ hợp phá dỡ nhà cửa, phá dỡ công trình cũ."
+      },
+      "Nguy": {
+        "cat_hung": "Hung",
+        "y_nghia": "Nguy hiểm, bất trắc. Kỵ leo cao, đi thuyền, cầu tài, ký kết. Chỉ hợp lấp hang lỗ."
+      },
+      "Thành": {
+        "cat_hung": "Cát",
+        "y_nghia": "Thành tựu, kết quả tốt. Tuyệt vời cho khai trương, cưới hỏi, nhập học, nhậm chức."
+      },
+      "Thu": {
+        "cat_hung": "Bình",
+        "y_nghia": "Thu hoạch, gom về. Tốt cho gặt hái, thu tiền nợ, mua bảo hiểm, cất trữ của cải."
+      },
+      "Khai": {
+        "cat_hung": "Cát",
+        "y_nghia": "Mở mang, thông suốt. Tốt cho khai trương, nhậm chức, kết hôn, động thổ."
+      },
+      "Bế": {
+        "cat_hung": "Hung",
+        "y_nghia": "Đóng kín, bế tắc. Kỵ giao dịch, chữa bệnh, xuất hành, nhậm chức."
+      }
+    }
+  }

@@ -8,6 +8,7 @@ Chạy để kiểm tra file mẫu:
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Literal
 
@@ -117,6 +118,20 @@ class Chart(BaseModel):
             if house.ten == ten:
                 return house
         raise KeyError(f"Không thấy cung {ten}")
+
+
+def thu_muc_bao_cao(chart: Chart) -> Path:
+    """Một thư mục cho một lá số, đặt theo ngày và giờ sinh dương lịch."""
+    ngay = chart.ngay_sinh.strip().split("/")
+    if len(ngay) != 3:
+        raise ValueError(f"Ngày sinh không đúng dạng ngày/tháng/năm: {chart.ngay_sinh}")
+    d, m, y = (int(phan) for phan in ngay)
+    gio = chart.gio_hanh_chinh.strip().lower()
+    khop = re.fullmatch(r"(\d{1,2})\s*[h:]\s*(\d{2})", gio)
+    if not khop:
+        raise ValueError(f"Giờ sinh không đúng dạng 10h30: {chart.gio_hanh_chinh}")
+    gio_ten = f"{int(khop.group(1)):02d}h{khop.group(2)}"
+    return ROOT / "output" / f"{y:04d}-{m:02d}-{d:02d}_{gio_ten}"
 
 
 def load_chart(path: Path | None = None) -> Chart:

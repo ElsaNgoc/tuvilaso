@@ -1,0 +1,71 @@
+{
+    "module": "TuHoa_PhiTinh_TrungChau",
+    "topic": "Hoa_Ky_Chinh_Tinh",
+    "nguyen_tac_cot_loi": "Hóa Kỵ chủ về thu liễm, cản trở, bế tắc, sai lầm, tổn thương hoặc thị phi. Tuy nhiên, Trung Châu phái cho rằng Hóa Kỵ không phải lúc nào cũng xấu, đôi khi nó tạo ra sự kích phát hoặc thay đổi tính chất (Phản vi kỳ cách).",
+    "danh_sach_hoa_ky": [
+      {
+        "sao": "Thái Dương",
+        "can_hoa_ky": "Giáp",
+        "hinh_tuong_tam_ly": "Ánh sáng bị che khuất. Mang tâm lý bất mãn, làm ơn mắc oán, cho đi nhưng không được ghi nhận.",
+        "su_nghiep_tai_loc": "Dễ bị cấp trên chèn ép, nam giới sự nghiệp gặp nhiều cản trở. Có tài lộc nhưng phải hao tâm tổn trí, dễ vướng vào rắc rối vì tính lo chuyện bao đồng.",
+        "tinh_cam_gia_dao": "Bất lợi cho nam giới (cha, chồng, con trai). Nữ mệnh dễ bất mãn với chồng hoặc vất vả vì nam giới trong nhà.",
+        "suc_khoe": "Các bệnh về Mắt, tim mạch, huyết áp hoặc hệ thần kinh căng thẳng."
+      },
+      {
+        "sao": "Thái Âm",
+        "can_hoa_ky": "Ất",
+        "hinh_tuong_tam_ly": "Tinh thần u ám, hay suy nghĩ bi quan, trầm cảm. Thiếu cảm giác an toàn về vật chất và tình cảm.",
+        "su_nghiep_tai_loc": "Chủ về hao tài ngầm, đầu tư sai lầm do cảm tính. Dễ bị lừa gạt tiền bạc hoặc mua phải tài sản, bất động sản có vấn đề (do Thái Âm chủ điền trạch).",
+        "tinh_cam_gia_dao": "Bất lợi cho nữ giới (mẹ, vợ, con gái). Nam mệnh dễ đau khổ vì phụ nữ hoặc vợ hay ốm đau.",
+        "suc_khoe": "Âm hư, các bệnh về nội tiết tố, thận, sinh dục nữ, hoặc suy nhược thần kinh, mất ngủ kéo dài."
+      },
+      {
+        "sao": "Liêm Trinh",
+        "can_hoa_ky": "Bính",
+        "hinh_tuong_tam_ly": "Tù tinh hóa Kỵ, cảm xúc bị trói buộc, tính tình trở nên cực đoan, ghen tuông, cố chấp không lối thoát.",
+        "su_nghiep_tai_loc": "Dễ vướng vào pháp luật, kiện tụng, rắc rối hành chính hoặc bị tai tiếng làm mất danh dự (Tù ngục tai ương). Cẩn thận ký kết hợp đồng.",
+        "tinh_cam_gia_dao": "Đào hoa kiếp. Tình cảm dây dưa bi lụy, dễ vướng vào mối quan hệ tay ba hoặc bị tổn thương sâu sắc vì tình.",
+        "suc_khoe": "Huyết quang tai ương (chảy máu, tai nạn, mổ xẻ), bệnh lây qua đường tình dục, hoặc các bệnh liên quan đến máu huyết."
+      },
+      {
+        "sao": "Cự Môn",
+        "can_hoa_ky": "Đinh",
+        "hinh_tuong_tam_ly": "Ám tinh hóa Kỵ, sự đa nghi tăng cao. Ăn nói dễ mất lòng, họa từ miệng mà ra.",
+        "su_nghiep_tai_loc": "Khẩu thiệt thị phi. Công việc liên tục bị người khác cãi vã, phản đối, gièm pha. Tuy nhiên lại hợp với các nghề dùng lời nói để kiếm tiền (luật sư, môi giới, giáo viên) vì lấy thị phi làm nghề.",
+        "tinh_cam_gia_dao": "Giao tiếp trong gia đình bế tắc, vợ chồng hay cãi vã, khắc khẩu, thiếu sự thấu hiểu.",
+        "suc_khoe": "Các bệnh về tỳ vị (dạ dày), tiêu hóa kém, hoặc các bệnh liên quan đến cuống họng, miệng, răng."
+      },
+      {
+        "sao": "Thiên Cơ",
+        "can_hoa_ky": "Mậu",
+        "hinh_tuong_tam_ly": "Kế hoạch đổ vỡ. Suy nghĩ quá nhiều dẫn đến bế tắc, tính toán sai lầm, càng thông minh càng dễ bị thông minh hại.",
+        "su_nghiep_tai_loc": "Bôn ba lao khổ, thay đổi công việc liên tục nhưng không như ý. Quyết định đầu tư sai thời điểm. Cơ hội đến rồi lại vụt mất.",
+        "tinh_cam_gia_dao": "Mối quan hệ gia đình lỏng lẻo, hay có sự thay đổi, di chuyển khiến anh em, vợ chồng xa cách.",
+        "suc_khoe": "Tai nạn giao thông, thương tích ở tay chân. Bệnh suy nhược thần kinh, bệnh về gan mật."
+      },
+      {
+        "sao": "Thiên Đồng",
+        "can_hoa_ky": "Canh",
+        "hinh_tuong_tam_ly": "Phúc tinh hóa Kỵ, đánh mất sự thụ hưởng. Có phúc mà không được hưởng, nội tâm thường cảm thấy trống rỗng, bất đắc chí.",
+        "su_nghiep_tai_loc": "Thường xuyên phải làm việc quần quật, bận rộn một cách vô ích. Sự nghiệp thiếu tính ổn định, dễ bị xáo trộn.",
+        "tinh_cam_gia_dao": "Cố ý trồng hoa hoa chẳng nở. Tình cảm dễ sinh cảnh đồng sàng dị mộng, khao khát tình cảm nhưng không được đáp lại.",
+        "suc_khoe": "Các bệnh về hệ bài tiết, thận, bàng quang, hoặc tỳ vị kém dẫn đến ăn uống không tiêu."
+      },
+      {
+        "sao": "Vũ Khúc",
+        "can_hoa_ky": "Nhâm",
+        "hinh_tuong_tam_ly": "Tài tinh hóa Kỵ, tính cách trở nên quá cứng nhắc, cô độc, vì tiền mà tuyệt tình.",
+        "su_nghiep_tai_loc": "Biểu hiện rõ rệt nhất là KẸT TIỀN. Dòng tiền đứt đoạn, xoay vòng vốn thất bại, phá sản, đầu tư thua lỗ nặng nề, nợ nần khó đòi.",
+        "tinh_cam_gia_dao": "Bất lợi nghiêm trọng cho hôn nhân do Vũ Khúc vốn mang tính cô thần. Dễ dẫn đến ly dị, lạnh nhạt hoặc vì vấn đề tài chính mà gia đình tan vỡ.",
+        "suc_khoe": "Rất dễ mắc tai nạn liên quan đến kim khí (dao kéo, mổ xẻ), tai nạn giao thông nghiêm trọng. Bệnh về phổi, hô hấp."
+      },
+      {
+        "sao": "Tham Lang",
+        "can_hoa_ky": "Quý",
+        "hinh_tuong_tam_ly": "Dục vọng không toại. Tham lam nhưng không đạt được mục đích. Thường xuyên gặp cảnh đoạt ái (bị cướp công hoặc cướp người yêu).",
+        "su_nghiep_tai_loc": "Sự nghiệp cạnh tranh khốc liệt, dễ vướng vào các mối quan hệ giao tế phức tạp, rắc rối. Tốn tiền vì xã giao, tiệc tùng vô ích.",
+        "tinh_cam_gia_dao": "Thường mang ý nghĩa 'Phản vi kỳ cách' trong Trung Châu phái: Hóa Kỵ làm giảm bớt tính đào hoa dâm dật của Tham Lang, khiến đương số bớt lăng nhăng mà tập trung vào chuyên môn hoặc tôn giáo. Nhưng nếu hãm địa thì tình duyên lận đận, gặp đào hoa sát.",
+        "suc_khoe": "Các bệnh về gan mật, bệnh lây qua đường tình dục, hoặc do ăn uống chơi bời quá độ mà sinh bệnh."
+      }
+    ]
+  }
