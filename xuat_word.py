@@ -30,7 +30,17 @@ def gan_font(run, dam: bool = False, nghieng: bool = False) -> None:
     run._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
 
 
+def mo_link(van: str) -> str:
+    """Đổi link trong bài thành chữ và địa chỉ trang, để file Word bấm được bằng mắt."""
+    return re.sub(
+        r"\[([^\]]+)\]\((/[^)]+)\)",
+        lambda khop: f"{khop.group(1)} (http://127.0.0.1:8765{khop.group(2)})",
+        van,
+    )
+
+
 def them_chu(doan, van: str, dam: bool = False) -> None:
+    van = mo_link(van)
     vi_tri = 0
     for khop in MAU_IN.finditer(van):
         if khop.start() > vi_tri:
@@ -69,7 +79,13 @@ def ve_bang(tai_lieu, hang: list[list[str]]) -> None:
             o = bang.cell(i, j)
             o.text = ""
             doan = o.paragraphs[0]
-            gan_font(doan.add_run(chu), i == 0)
+            phan = re.split(r"\s*<br\s*/?>\s*", chu, flags=re.I)
+            for k, mot_phan in enumerate(phan):
+                if k:
+                    ngat = doan.add_run()
+                    gan_font(ngat, i == 0)
+                    ngat.add_break()
+                them_chu(doan, mot_phan, i == 0)
 
 
 def them_thong_tin(tai_lieu, laso: Path | None) -> None:

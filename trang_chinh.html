@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tử Vi</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    margin: 0;
+    background: #f4efe6;
+    color: #1c1915;
+    font: 18px/1.5 "Segoe UI", sans-serif;
+  }
+  .dinh {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #f4efe6;
+  }
+  .khung-dinh {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1rem 1.25rem 0.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  main { max-width: 52rem; margin: 0 auto; padding: 0.6rem 1.25rem 4rem; }
+  h1 { font-size: 1.8rem; font-weight: 650; margin: 0; }
+  h2 { font-size: 1.25rem; margin: 0 0 0.4rem; }
+  p { margin: 0.4rem 0 1rem; }
+  a { color: #1f4d3a; }
+  .muc {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.1rem;
+  }
+  .muc button {
+    margin: 0;
+    background: #fffdf8;
+    color: #1c1915;
+    border: 1px solid #c8bfb0;
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    font: 600 0.95rem/1 "Segoe UI", sans-serif;
+    cursor: pointer;
+  }
+  .muc button.dang { background: #1f4d3a; color: #fff; border-color: #1f4d3a; }
+  .nut-mo, .nut-phu {
+    margin-top: 0;
+    background: #fffdf8;
+    color: #1c1915;
+    border: 1px solid #c8bfb0;
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    font: 600 0.95rem/1 "Segoe UI", sans-serif;
+    cursor: pointer;
+  }
+  #goc-phai { display: flex; align-items: center; gap: 0.55rem; }
+  #ds-laso { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.8rem; }
+  #ds-laso button.dang { background: #1f4d3a; color: #fff; border-color: #1f4d3a; }
+  #goi-ten { color: #6b645b; font-size: 0.95rem; }
+  .ten-nguoi { font-size: 0.95rem; }
+  #lop {
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 25, 21, 0.45);
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    z-index: 20;
+  }
+  .hop-vao {
+    width: min(28rem, calc(100vw - 2rem));
+    box-sizing: border-box;
+    background: #fffdf8;
+    border-radius: 16px;
+    padding: 1.2rem 1.2rem 1.3rem;
+    box-shadow: 0 16px 40px rgba(40, 30, 10, 0.18);
+  }
+  .hop-vao h2 { margin-top: 0; }
+  .hang-nut { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .hang-nut button, .hop-vao .gui { margin-top: 0.4rem; }
+  label { display: block; margin: 0.7rem 0 0.25rem; font-size: 0.95rem; }
+  textarea, input[type="text"], input[type="password"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.8rem;
+    border: 1px solid #c8bfb0;
+    border-radius: 8px;
+    background: #fffdf8;
+    font: 15px/1.45 Consolas, monospace;
+  }
+  textarea { min-height: 18rem; resize: vertical; }
+  button.gui, .nut {
+    margin-top: 0.8rem;
+    background: #1f4d3a;
+    color: #fff;
+    border: 0;
+    border-radius: 8px;
+    padding: 0.7rem 1.2rem;
+    font: 600 1rem/1 "Segoe UI", sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+  }
+  button.gui:disabled { background: #8a847a; cursor: wait; }
+  #tinh_trang, .loi { min-height: 1.5rem; margin-top: 0.8rem; }
+  .loi { color: #8a1f1f; white-space: pre-wrap; }
+  .thanh {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.4rem;
+  }
+  .thanh h2 { margin: 0; }
+  .thanh .nut { margin-top: 0; }
+  #bai, .the, .khung {
+    background: #fffdf8;
+    border: 1px solid #c8bfb0;
+    border-radius: 8px;
+    padding: 0.4rem 1.2rem 1.2rem;
+  }
+  #bai { margin-top: 0.8rem; }
+  #bai h2 { font-size: 1.25rem; margin: 1.2rem 0 0.4rem; }
+  #bai p, #bai li { margin: 0.45rem 0; }
+  #bai ul { margin: 0.2rem 0 0.8rem; padding-left: 1.2rem; }
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.95rem; }
+  th, td { border: 1px solid #c8bfb0; padding: 0.45rem 0.5rem; text-align: left; vertical-align: top; }
+  th { background: #efe8dc; }
+  tr.hom-nay { background: #f3ead2; }
+  .bang-cuon { overflow-x: auto; }
+  .o-viec { display: flex; gap: 0.4rem; align-items: flex-start; }
+  .dau-viec {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex: none;
+    margin-top: 0.1rem;
+  }
+  .dau-viec.nen { background: #e7f6ec; color: #17803d; }
+  .dau-viec.kieng { background: #fde8e6; color: #c4271b; }
+  .dau-viec.khong { background: #f3efe8; color: #8a847a; }
+  .cat { color: #17803d; font-weight: 700; }
+  .hung { color: #c4271b; font-weight: 700; }
+  .binh { color: #a16207; font-weight: 700; }
+  .ngay-nay { font-size: 1.35rem; font-weight: 700; margin: 0.2rem 0 0.6rem; }
+  #tro { min-height: 16rem; max-height: 24rem; overflow: auto; padding: 0.8rem; }
+  .bong { margin: 0.45rem 0; padding: 0.55rem 0.75rem; border-radius: 10px; }
+  .hoi { background: #e7f0ea; }
+  .dap { background: #fff; border: 1px solid #e4dccf; }
+  .hang-gui { display: flex; gap: 0.5rem; margin-top: 0.7rem; }
+  .hang-gui input { flex: 1; width: auto; min-width: 0; font: 16px/1.4 "Segoe UI", sans-serif; }
+  @media (max-width: 640px) {
+    #tro { min-height: 8rem; }
+  }
+  .hang-gui button { margin-top: 0; white-space: nowrap; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header class="dinh">
+  <div class="khung-dinh">
+    <h1>Tử Vi</h1>
+    <div id="goc-phai">
+      <button type="button" id="nut-vao" class="nut-mo">Đăng nhập</button>
+    </div>
+  </div>
+</header>
+<div id="lop" hidden>
+  <div class="hop-vao" role="dialog" aria-labelledby="tieu-vao">
+    <h2 id="tieu-vao">Đăng nhập bằng Gmail</h2>
+    <p>Không đăng nhập vẫn dán lá số và xem một lần. Đóng trình duyệt là phần vừa xem không được giữ.</p>
+    <p>Đăng nhập bằng Gmail để giữ tên, lá số và cuộc trò chuyện.</p>
+    <div id="nut-google"></div>
+    <p class="loi" id="loi-google" hidden></p>
+    <div class="hang-nut">
+      <button type="button" class="nut-phu" id="de-sau">Để sau</button>
+    </div>
+  </div>
+</div>
+<main>
+  <nav class="muc" aria-label="Các mục">
+    <button type="button" class="dang" data-mo="laso">Phân tích lá số</button>
+    <button type="button" data-mo="lich">Lịch vạn niên</button>
+    <button type="button" data-mo="chat">Hỏi về lá số</button>
+  </nav>
+
+  <section id="laso">
+    <p><strong>Hướng dẫn:</strong></p>
+    <p>1. Dán toàn bộ dữ liệu lá số (bao gồm Thông tin, Tứ trụ và 12 cung) vào ô trống.</p>
+    <p>2. Bấm nút bắt đầu để hệ thống phân tích. Kết quả sẽ hiển thị ngay bên dưới.</p>
+    <p>3. Sử dụng nút "Tải file Word" bên cạnh để lưu báo cáo.<br>Lưu ý: Quá trình xử lý có thể mất vài phút, vui lòng không đóng trình duyệt.</p>
+    <p id="ds-tieu" hidden><strong>Lá số đã lưu</strong></p>
+    <div id="ds-laso"></div>
+    <form id="form">
+      <label for="ten-nguoi">Tên người của lá số</label>
+      <input id="ten-nguoi" name="ten_nguoi" type="text" maxlength="40" placeholder="Ví dụ: Bé Na">
+      <p id="goi-ten">Chưa đăng nhập nên lá số sẽ không được lưu trữ.</p>
+      <textarea name="bai" placeholder="Dán bài lá số vào đây" required></textarea>
+      <button class="gui" type="submit" id="nut">Bắt đầu</button>
+    </form>
+    <div id="tinh_trang"></div>
+    <section id="ket_qua" hidden>
+      <div class="thanh">
+        <h2>Bài phân tích</h2>
+        <a id="tai" class="nut" href="#">Tải file Word</a>
+      </div>
+      <article id="bai"></article>
+    </section>
+  </section>
+
+  <section id="lich" hidden>
+    <div class="the">
+      <p id="dong-ngay">Đang lấy ngày...</p>
+      <p class="ngay-nay" id="truc-chung"></p>
+      <p>Bảng này dùng chung cho mọi người. Việc đúng tuổi của lá số vừa dán nằm ở <a href="/ngay">Việc nên làm hôm nay</a>.</p>
+      <div class="bang-cuon">
+      <table>
+        <thead><tr><th>Tên Trực</th><th>Cát/Hung</th><th>Việc NÊN làm</th><th>Việc KIÊNG KỴ</th></tr></thead>
+        <tbody id="bang-truc"></tbody>
+      </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="chat" hidden>
+    <p>Hỏi phần nào chưa rõ trong bài phân tích của lá số vừa dán.</p>
+    <div class="khung">
+      <div id="tro"></div>
+      <form class="hang-gui" id="form-hoi">
+        <input id="cau-hoi" type="text" placeholder="Ví dụ: tháng này bé cần chú ý gì?" required>
+        <button class="gui" type="submit" id="nut-hoi">Gửi</button>
+      </form>
+    </div>
+  </section>
+</main>
+<script src="/thu_vien/lunar.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+const CAN_VIET = {"甲":"Giáp","乙":"Ất","丙":"Bính","丁":"Đinh","戊":"Mậu","己":"Kỷ","庚":"Canh","辛":"Tân","壬":"Nhâm","癸":"Quý"};
+const CHI_VIET = {"子":"Tý","丑":"Sửu","寅":"Dần","卯":"Mão","辰":"Thìn","巳":"Tỵ","午":"Ngọ","未":"Mùi","申":"Thân","酉":"Dậu","戌":"Tuất","亥":"Hợi"};
+const VONG_CHI = ["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+const VONG_TRUC = ["Kiến","Trừ","Mãn","Bình","Định","Chấp","Phá","Nguy","Thành","Thu","Khai","Bế"];
+
+function thoat(chu) {
+  return String(chu).replace(/[&<>"]/g, (ky) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ky]));
+}
+function mau(loai) {
+  if (loai === "Cát") return "cat";
+  if (loai === "Hung") return "hung";
+  return "binh";
+}
+function chiHomNay() {
+  const mat = Solar.fromDate(new Date());
+  const am = mat.getLunar();
+  return {
+    thang: CHI_VIET[am.getMonthZhi()],
+    ngay: CHI_VIET[am.getDayZhi()],
+    duong: mat.getDay() + "/" + mat.getMonth() + "/" + mat.getYear(),
+    am: "ngày " + (CAN_VIET[am.getDayInGanZhi()[0]] || "") + " " + CHI_VIET[am.getDayZhi()]
+  };
+}
+function trucHomNay(chiThang, chiNgay) {
+  return VONG_TRUC[(VONG_CHI.indexOf(chiNgay) - VONG_CHI.indexOf(chiThang) + 12) % 12];
+}
+
+document.querySelectorAll(".muc button").forEach((nut) => {
+  nut.addEventListener("click", () => {
+    document.querySelectorAll(".muc button").forEach((mot) => mot.classList.remove("dang"));
+    nut.classList.add("dang");
+    ["laso", "lich", "chat"].forEach((ten) => {
+      document.getElementById(ten).hidden = ten !== nut.dataset.mo;
+    });
+    if (nut.dataset.mo === "lich") veLich();
+    if (nut.dataset.mo === "chat") taiHoi();
+  });
+});
+
+const form = document.getElementById("form");
+const nut = document.getElementById("nut");
+const hop = document.getElementById("tinh_trang");
+const vung = document.getElementById("ket_qua");
+const bai = document.getElementById("bai");
+const tai = document.getElementById("tai");
+
+let laSo = sessionStorage.getItem("laSo") || "";
+let daDangNhap = false;
+
+function hienBai(data) {
+  bai.innerHTML = data.html;
+  if (data.ma) {
+    laSo = String(data.ma);
+    sessionStorage.setItem("laSo", laSo);
+    tai.href = "/tai-bai/" + data.ma;
+  }
+  tai.setAttribute("download", data.ten || "TuVi.docx");
+  vung.hidden = false;
+  taiDanhSach();
+}
+
+async function taiDanhSach() {
+  const tra = await fetch("/la-so");
+  if (!tra.ok) return [];
+  const ds = await tra.json();
+  const hop = document.getElementById("ds-laso");
+  const tieu = document.getElementById("ds-tieu");
+  hop.textContent = "";
+  tieu.hidden = ds.length === 0;
+  ds.forEach((mot) => {
+    const nut = document.createElement("button");
+    nut.type = "button";
+    nut.className = "nut-mo" + (String(mot.ma) === laSo ? " dang" : "");
+    nut.textContent = mot.ten + " · " + mot.ngay_sinh;
+    nut.addEventListener("click", () => chonLaSo(mot.ma));
+    hop.appendChild(nut);
+  });
+  return ds;
+}
+
+async function chonLaSo(ma) {
+  laSo = String(ma);
+  sessionStorage.setItem("laSo", laSo);
+  const tra = await fetch("/bai/" + ma);
+  if (!tra.ok) {
+    sessionStorage.removeItem("laSo");
+    laSo = "";
+    return;
+  }
+  const data = await tra.json();
+  bai.innerHTML = data.html;
+  tai.href = "/tai-bai/" + data.ma;
+  tai.setAttribute("download", data.ten || "TuVi.docx");
+  vung.hidden = false;
+  taiDanhSach();
+  taiHoi();
+}
+
+form.bai.addEventListener("input", () => {
+  if (form.bai.value.trim()) return;
+  vung.hidden = true;
+  bai.innerHTML = "";
+  hop.textContent = "";
+});
+
+form.addEventListener("submit", async (su_kien) => {
+  su_kien.preventDefault();
+  nut.disabled = true;
+  hop.className = "";
+  hop.textContent = "Đang phân tích...";
+  try {
+    const tra_loi = await fetch("/phan-tich", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body: new URLSearchParams({ bai: form.bai.value, ten_nguoi: document.getElementById("ten-nguoi").value }),
+    });
+    if (!tra_loi.ok) {
+      hop.className = "loi";
+      hop.textContent = await tra_loi.text();
+      return;
+    }
+    hienBai(await tra_loi.json());
+    hop.textContent = "Xong. Bài phân tích đã được tạo bên dưới, hoặc bấm nút bên cạnh để tải file Word.";
+    vung.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (loi) {
+    hop.className = "loi";
+    hop.textContent = "Không nối được với chương trình. Hãy xem cửa sổ đang chạy web.py.";
+  } finally {
+    nut.disabled = false;
+  }
+});
+
+let daVeLich = false;
+async function veLich() {
+  if (daVeLich) return;
+  const hom = chiHomNay();
+  const ten = trucHomNay(hom.thang, hom.ngay);
+  const tra = await fetch("/api/lich");
+  const danh = await tra.json();
+  document.getElementById("dong-ngay").textContent = "Dương lịch " + hom.duong + " · Âm lịch " + hom.am;
+  const dong = document.getElementById("truc-chung");
+  const muc = danh.find((mot) => mot.ten === ten);
+  dong.textContent = "Hôm nay: Trực " + ten;
+  dong.className = "ngay-nay " + mau(muc ? muc.cat_hung : "");
+  document.getElementById("bang-truc").innerHTML = danh.map((mot) => {
+    const cham = mot.ten === ten ? " class=\"hom-nay\"" : "";
+    const khong = String(mot.kieng).indexOf("Không có") >= 0;
+    const dauKieng = khong ? "khong" : "kieng";
+    const kyHieu = khong ? "–" : "✕";
+    return "<tr" + cham + "><td>Trực " + thoat(mot.ten) + "</td><td class=\"" + mau(mot.cat_hung) + "\">" + thoat(mot.cat_hung) + "</td><td><div class=\"o-viec\"><span class=\"dau-viec nen\" aria-hidden=\"true\">✓</span><span>" + thoat(mot.nen) + "</span></div></td><td><div class=\"o-viec\"><span class=\"dau-viec " + dauKieng + "\" aria-hidden=\"true\">" + kyHieu + "</span><span>" + thoat(mot.kieng) + "</span></div></td></tr>";
+  }).join("");
+  daVeLich = true;
+}
+
+const tro = document.getElementById("tro");
+const formHoi = document.getElementById("form-hoi");
+const nutHoi = document.getElementById("nut-hoi");
+const oHoi = document.getElementById("cau-hoi");
+const lichSu = [];
+
+function sachChu(chu) {
+  return String(chu).replace(/\*\*/g, "").replace(/^\s*\*\s+/gm, "");
+}
+
+function themBong(loai, chu) {
+  const hop = document.createElement("div");
+  hop.className = "bong " + loai;
+  hop.textContent = sachChu(chu);
+  tro.appendChild(hop);
+  tro.scrollTop = tro.scrollHeight;
+}
+
+formHoi.addEventListener("submit", async (su_kien) => {
+  su_kien.preventDefault();
+  const cau = oHoi.value.trim();
+  if (!cau) return;
+  themBong("hoi", cau);
+  oHoi.value = "";
+  nutHoi.disabled = true;
+  let hom = { thang: "", ngay: "" };
+  try { hom = chiHomNay(); } catch (e) { /* lịch vẫn hỏi được nếu thư viện chưa tải */ }
+  try {
+    const tra = await fetch("/hoi", {
+      method: "POST",
+      headers: { "Content-Type": "application/json;charset=UTF-8" },
+      body: JSON.stringify({ cau, ma: laSo, chi_thang: hom.thang, chi_ngay: hom.ngay }),
+    });
+    const chu = await tra.text();
+    if (!tra.ok) {
+      themBong("dap", chu);
+      return;
+    }
+    const data = JSON.parse(chu);
+    themBong("dap", data.tra_loi);
+    lichSu.push({ hoi: cau, dap: data.tra_loi });
+  } catch (e) {
+    themBong("dap", "Không nối được. Hãy xem cửa sổ đang chạy web.py.");
+  } finally {
+    nutHoi.disabled = false;
+    oHoi.focus();
+  }
+});
+
+const lop = document.getElementById("lop");
+let daVeGoogle = false;
+
+function moLop() {
+  lop.hidden = false;
+  chuanBiGoogle();
+}
+function dongLop() {
+  lop.hidden = true;
+}
+function veGoc(ten) {
+  daDangNhap = Boolean(ten);
+  const goi = document.getElementById("goi-ten");
+  const oTen = document.getElementById("ten-nguoi");
+  goi.textContent = ten
+    ? "Đã đăng nhập bằng " + ten + ". Lá số và câu hỏi được giữ theo Gmail này."
+    : "Chưa đăng nhập thì lá số chỉ còn trong lần mở trình duyệt này.";
+  oTen.required = Boolean(ten);
+  const goc = document.getElementById("goc-phai");
+  goc.textContent = "";
+  if (!ten) {
+    const nut = document.createElement("button");
+    nut.type = "button";
+    nut.className = "nut-mo";
+    nut.textContent = "Đăng nhập";
+    nut.addEventListener("click", () => moLop());
+    goc.appendChild(nut);
+    return;
+  }
+  const chu = document.createElement("span");
+  chu.className = "ten-nguoi";
+  chu.textContent = ten;
+  const nut = document.createElement("button");
+  nut.type = "button";
+  nut.className = "nut-mo";
+  nut.textContent = "Thoát";
+  nut.addEventListener("click", async () => {
+    await fetch("/dang-xuat", { method: "POST" });
+    sessionStorage.removeItem("laSo");
+    laSo = "";
+    vung.hidden = true;
+    bai.textContent = "";
+    veGoc(null);
+    taiDanhSach();
+  });
+  goc.append(chu, nut);
+}
+async function nhanGoogle(phanHoi) {
+  const loi = document.getElementById("loi-google");
+  loi.hidden = true;
+  try {
+    const tra = await fetch("/dang-nhap-google", {
+      method: "POST",
+      headers: { "Content-Type": "application/json;charset=UTF-8" },
+      body: JSON.stringify({ token: phanHoi.credential }),
+    });
+    const data = await tra.json();
+    if (!tra.ok) throw new Error(data.loi || "Chưa đăng nhập được.");
+    veGoc(data.ten);
+    dongLop();
+    const ds = await taiDanhSach();
+    if (!laSo && ds.length) chonLaSo(ds[0].ma);
+  } catch (e) {
+    loi.hidden = false;
+    loi.textContent = e.message;
+  }
+}
+
+async function chuanBiGoogle() {
+  if (daVeGoogle) return;
+  const loi = document.getElementById("loi-google");
+  const tra = await fetch("/cau-hinh");
+  const data = await tra.json();
+  if (!data.google_client_id) {
+    loi.hidden = false;
+    loi.textContent = "Chưa gắn mã Gmail. Thêm GOOGLE_CLIENT_ID vào file .env rồi mở lại chương trình.";
+    return;
+  }
+  if (!window.google || !google.accounts) {
+    loi.hidden = false;
+    loi.textContent = "Chưa tải được nút Gmail. Hãy kiểm tra mạng rồi tải lại trang.";
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: data.google_client_id,
+    callback: nhanGoogle,
+  });
+  google.accounts.id.renderButton(document.getElementById("nut-google"), {
+    theme: "outline",
+    size: "large",
+    text: "signin_with",
+    locale: "vi",
+    width: 280,
+  });
+  daVeGoogle = true;
+}
+
+document.getElementById("nut-vao").addEventListener("click", () => moLop());
+document.getElementById("de-sau").addEventListener("click", dongLop);
+lop.addEventListener("click", (suKien) => {
+  if (suKien.target === lop) dongLop();
+});
+
+async function taiHoi() {
+  if (!laSo) return;
+  const tra = await fetch("/hoi-su/" + laSo);
+  if (!tra.ok) return;
+  const ds = await tra.json();
+  lichSu.length = 0;
+  tro.textContent = "";
+  ds.forEach((mot) => {
+    if (mot.nguoi_gui === "nguoi") themBong("hoi", mot.noi_dung);
+    else {
+      lichSu.push({ hoi: "", dap: mot.noi_dung });
+      themBong("dap", mot.noi_dung);
+    }
+  });
+}
+
+fetch("/toi").then(async (tra) => {
+  const data = await tra.json();
+  if (data.ten) veGoc(data.ten);
+  else veGoc(null);
+  if (new URLSearchParams(location.search).get("dang-nhap") === "1" && !data.ten) moLop();
+  const ds = await taiDanhSach();
+  if (laSo) chonLaSo(laSo);
+  else if (data.ten && ds.length) chonLaSo(ds[0].ma);
+});
+</script>
+</body>
+</html>

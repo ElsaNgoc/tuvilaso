@@ -3,3 +3,7 @@ venv/
 __pycache__/
 *.pyc
 .cursor/
+du_lieu/*.db
+output/
+laso/vua_dan.json
+laso/vua_dan.txt

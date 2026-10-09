@@ -425,6 +425,8 @@ class Viec:
     ca_phu: bool = True
     sao_them: list[str] = field(default_factory=list)
     he_thong: str = ""
+    yeu_cau_sau: str = ""
+    nguyen_lieu_sau: str = ""
 
 
 def nhan_cua(nhan: dict, ten: str) -> list[str]:
@@ -550,7 +552,9 @@ def dong_tu_tru(chart: Chart) -> str:
 
 def nguyen_lieu_chuong_1(chart: Chart, nhan: dict) -> str:
     dac = [dong for dong in chart.dac_diem if not dong.startswith("Đường")]
+    tuoi = tuoi_duong(chart)
     khoi = [
+        dieu_kien_tuoi(tuoi),
         f"Đương số {chart.gioi_tinh}, {chart.am_duong}, sinh {chart.am_lich}. "
         f"Bản mệnh {chart.ban_menh}. Cục {chart.cuc}. {nhan['ngu_hanh']}. "
         f"Nhãn: {'; '.join(nhan['menh_tu']) or 'không'}. "
@@ -600,13 +604,16 @@ def nguyen_lieu_chuong_2(chart: Chart, nhan: dict, muc: list[tuple[str, str]]) -
         if house.than_cu:
             dan.append("Thân cư")
         dong_cung.append(
-            f"Cung {house.ten} tại {house.vi_tri}, hạn {house.dai_han}: {ten_chinh(house)}. "
+            f"Cung {house.ten} tại {house.vi_tri}, việc của cung: {viec_cung(house.ten, tuoi_duong(chart))}, "
+            f"hạn {house.dai_han}: {ten_chinh(house)}. "
+            f"Phụ tinh: {', '.join(star.ten for star in house.phu_tinh) or 'không'}. "
             f"Đánh dấu: {', '.join(dan) or 'không'}. "
-            f"Tam hợp với {ban[0].ten} ({ten_chinh(ban[0])}) và {ban[1].ten} ({ten_chinh(ban[1])}). "
-            f"Nhị hợp với {hop.ten} ({ten_chinh(hop)}). "
-            f"Xung {xung.ten} ({ten_chinh(xung)})."
+            f"Tam hợp với {ban[0].ten} tại {ban[0].vi_tri} ({ten_chinh(ban[0])}) "
+            f"và {ban[1].ten} tại {ban[1].vi_tri} ({ten_chinh(ban[1])}). "
+            f"Nhị hợp với {hop.ten} tại {hop.vi_tri} ({ten_chinh(hop)}). "
+            f"Xung {xung.ten} tại {xung.vi_tri} ({ten_chinh(xung)})."
         )
-    khoi = ["\n".join(dong_cung)]
+    khoi = [dieu_kien_tuoi(tuoi_duong(chart)), "\n".join(dong_cung)]
     luc = doc_tri_thuc("knowledge_lucsat.json")
     if luc:
         khoi.append("Lục sát trên lá số này:\n" + dong_luc_sat(chart, luc))
@@ -624,7 +631,7 @@ def nguyen_lieu_chuong_2(chart: Chart, nhan: dict, muc: list[tuple[str, str]]) -
             khoi.append(cat_token(doan, 70))
     if any("Mệnh hung nhi cát" in dong for dong in nhan["menh_tu"]):
         khoi.append(cat_token(tim_muc(muc, "18.1.", 240), 50))
-    return ghep_ngan(khoi, 1800)
+    return ghep_ngan(khoi, 2000)
 
 
 def dong_tu_hoa(chart: Chart, can: str) -> str:
@@ -681,26 +688,244 @@ VIEC_CUNG = {
     "BÀO": "anh em, bạn cùng trang lứa",
 }
 
-HE_THANG = """Bạn là chuyên gia tư vấn Tử Vi thực tế. Dựa trên dữ liệu các sao của từng tháng được cung cấp, hãy viết dự báo chi tiết cho 12 tháng âm lịch của năm nay.
+VIEC_TRE = {
+    "MỆNH": "tính cách ngoan hay bướng",
+    "PHỤ": "cha mẹ và người chăm sóc",
+    "PHÚC": "tinh thần",
+    "ĐIỀN": "chỗ ở trong nhà",
+    "QUAN": "học hành và khả năng tiếp thu",
+    "NÔ": "bạn cùng chơi",
+    "DI": "đi ra ngoài, đi học",
+    "TẬT": "sức khỏe và tai nạn",
+    "TÀI": "không được luận tiền bạc hay đầu tư",
+    "TỬ": "không được luận con cái hay cấp dưới",
+    "PHỐI": "không được luận vợ chồng",
+    "BÀO": "anh chị em",
+}
+
+VIEC_THANH = {
+    "MỆNH": "tính cách đang hình thành",
+    "PHỤ": "cha mẹ",
+    "PHÚC": "tinh thần",
+    "ĐIỀN": "chỗ ở",
+    "QUAN": "thi cử và môi trường học",
+    "NÔ": "bạn học",
+    "DI": "đi học, môi trường mới",
+    "TẬT": "sức khỏe và tâm sinh lý",
+    "TÀI": "chi tiêu hằng ngày, không khuyên đầu tư",
+    "TỬ": "không được luận con cái hay cấp dưới",
+    "PHỐI": "tình cảm học trò, không luận cưới xin",
+    "BÀO": "anh chị em",
+}
+
+VIEC_GIA = {
+    "MỆNH": "sức khỏe và tính tình",
+    "PHỤ": "người thân còn lại",
+    "PHÚC": "tinh thần, họ hàng",
+    "ĐIỀN": "nhà ở",
+    "QUAN": "không khuyên khởi nghiệp",
+    "NÔ": "người xung quanh, không luận quản lý cấp dưới",
+    "DI": "đi lại và sức khỏe khi ra ngoài",
+    "TẬT": "sức khỏe thể chất",
+    "TÀI": "giữ của đã có, cấm đầu tư mạo hiểm",
+    "TỬ": "con cháu",
+    "PHỐI": "bạn đời",
+    "BÀO": "anh chị em",
+}
+
+NAM_XEM = 2026
+
+
+def tuoi_duong(chart: Chart, nam_xem: int = NAM_XEM) -> int:
+    """Tuổi dương lịch: năm xem trừ năm sinh."""
+    _, _, nam_goc = nam_sinh(chart)
+    return nam_xem - nam_goc
+
+
+def nhom_tuoi(tuoi: int) -> str:
+    if tuoi <= 15:
+        return "tre"
+    if tuoi <= 22:
+        return "thanh_nien"
+    if tuoi <= 60:
+        return "truong_thanh"
+    return "cao_nien"
+
+
+def viec_cung(ten: str, tuoi: int) -> str:
+    bang = {
+        "tre": VIEC_TRE,
+        "thanh_nien": VIEC_THANH,
+        "cao_nien": VIEC_GIA,
+    }.get(nhom_tuoi(tuoi), VIEC_CUNG)
+    return bang.get(ten, "việc của cung này")
+
+
+def dieu_kien_tuoi(tuoi: int) -> str:
+    """Câu ràng buộc chủ đề, gắn vào prompt của cả 4 chương."""
+    nhom = nhom_tuoi(tuoi)
+    if nhom == "tre":
+        viec = (
+            "Nhóm 0-15 tuổi, trẻ em. "
+            "CẤM phân tích sự nghiệp, kinh doanh, tiền bạc, đầu tư, cấp dưới, vợ chồng. "
+            "CHỈ được luận: sức khỏe, tai nạn, tính cách ngoan hay bướng, khả năng tiếp thu học hành, "
+            "và mối quan hệ với cha mẹ hoặc người chăm sóc."
+        )
+    elif nhom == "thanh_nien":
+        viec = (
+            "Nhóm 16-22 tuổi, thanh niên. "
+            "Tập trung định hướng thi cử, môi trường học tập, sự phát triển tâm sinh lý, tình cảm học trò. "
+            "Không khuyên đầu tư, kinh doanh, quản lý cấp dưới hay cưới xin."
+        )
+    elif nhom == "truong_thanh":
+        viec = "Nhóm 23-60 tuổi, trưởng thành. Được luận đầy đủ sự nghiệp, tiền bạc, hôn nhân."
+    else:
+        viec = (
+            "Nhóm trên 60 tuổi. "
+            "Tập trung sức khỏe thể chất, tinh thần, và mối quan hệ với con cháu. "
+            "Cấm khuyên khởi nghiệp hay đầu tư mạo hiểm."
+        )
+    return (
+        f"[ĐIỀU KIỆN RÀNG BUỘC CHỦ ĐỀ] Đương số {tuoi} tuổi, tính bằng năm xem trừ năm sinh. {viec} "
+        "Nếu mẫu chữ bên trên có chữ sự nghiệp hoặc tiền bạc mà nhóm tuổi này bị cấm, bỏ chủ đề đó, viết đúng chủ đề được phép."
+    )
+
+
+def gan_tuoi(he: str, tuoi: int) -> str:
+    return he.rstrip() + "\n\n" + dieu_kien_tuoi(tuoi)
+
+
+def chi_thi_truc(tuoi: int) -> str:
+    """Cách dịch 12 Trực sang việc đúng lứa tuổi, dùng riêng cho chương 4."""
+    nhom = nhom_tuoi(tuoi)
+    if nhom == "tre":
+        dang_dung = (
+            "Đương số thuộc nhóm Trẻ em. Chỉ dùng cách dịch của nhóm này. "
+            "Trong bảng không được xuất hiện các từ: Khai trương, Động thổ, Ký hợp đồng, Đòi nợ."
+        )
+    elif nhom == "thanh_nien":
+        dang_dung = "Đương số thuộc nhóm Thanh niên. Chỉ dùng cách dịch của nhóm này."
+    elif nhom == "truong_thanh":
+        dang_dung = "Đương số thuộc nhóm Người trưởng thành. Giữ nguyên ý nghĩa gốc trong file."
+    else:
+        dang_dung = "Đương số thuộc nhóm Người cao tuổi. Chỉ dùng cách dịch của nhóm này."
+    return (
+        "Dựa vào số tuổi thực tế của đương số, bạn phải dịch thuật ý nghĩa của 12 Trực "
+        "sang các hoạt động phù hợp với lứa tuổi đó trước khi lập bảng tra cứu.\n"
+        "Nếu là Trẻ em (0 - 15 tuổi): Tuyệt đối không dùng các từ như \"Khai trương\", \"Động thổ\", "
+        "\"Ký hợp đồng\", \"Đòi nợ\". Hãy dịch 'Ký hợp đồng' thành 'Bắt đầu môn học mới/Tham gia ngoại khóa'. "
+        "Dịch 'Kiêng giao dịch/Xuất hành' thành 'Hạn chế đến chỗ đông người, chú ý đi đứng kẻo ngã'. "
+        "Dịch 'Tốt để thu tài' thành 'Tốt để xin người lớn mua đồ chơi/sách vở'.\n"
+        "Nếu là Thanh niên (16 - 22 tuổi): Áp dụng vào việc nộp hồ sơ thi cử, làm quen bạn mới, "
+        "tham gia câu lạc bộ, bắt đầu dự án thực tập.\n"
+        "Nếu là Người trưởng thành (23 - 60 tuổi): Giữ nguyên ý nghĩa gốc (kinh doanh, đầu tư, xuất hành).\n"
+        "Nếu là Người cao tuổi (trên 60 tuổi): Tập trung vào việc đi khám bệnh, tập dưỡng sinh, "
+        "thăm hỏi họ hàng, tránh đi xa, dọn dẹp nhà cửa.\n"
+        "Bảng 12 Trực phải dùng ngôn từ mộc mạc, ngắn gọn, khớp hoàn cảnh thực tế của lứa tuổi.\n"
+        + dang_dung
+    )
+
+
+def gach_thang(tuoi: int) -> str:
+    nhom = nhom_tuoi(tuoi)
+    if nhom == "tre":
+        return (
+            "- Sức khỏe và tai nạn: dễ mệt, dễ bệnh, dễ ngã ở đâu.\n"
+            "- Tính cách và học hành: ngoan hay bướng, tiếp thu bài thế nào.\n"
+            "- Với cha mẹ: người lớn nên làm gì, tuyệt đối tránh gì. "
+            "Cấm viết thất thoát tài chính, đầu tư, cấp dưới, vợ chồng."
+        )
+    if nhom == "thanh_nien":
+        return (
+            "- Học tập và thi cử: thuận hay vướng ở đâu.\n"
+            "- Tâm sinh lý và tình cảm học trò: vui hay mâu thuẫn với ai.\n"
+            "- Việc nên làm và việc tránh trong tháng. Không khuyên đầu tư hay kinh doanh."
+        )
+    if nhom == "cao_nien":
+        return (
+            "- Sức khỏe thể chất: chỗ cần giữ.\n"
+            "- Tinh thần và con cháu: niềm vui hay buồn phiền với ai.\n"
+            "- Việc nên làm trong tháng. Cấm khuyên khởi nghiệp hay đầu tư mạo hiểm."
+        )
+    return (
+        "- Sự nghiệp và tiền bạc: thuận lợi gì, rủi ro mất tiền ở đâu.\n"
+        "- Tình cảm và gia đạo: mâu thuẫn hay niềm vui gì.\n"
+        "- Hành động cốt lõi: nên làm gì, tuyệt đối tránh làm gì trong tháng này."
+    )
+
+HE_TONG_QUAN = """Bạn là một chuyên gia tư vấn Tử Vi thực tế, chân thành và logic. Giọng văn mộc mạc, dễ hiểu, nói thẳng việc đời. Không hoa mỹ, không ẩn dụ.
+Chỉ dùng nguyên liệu trong filtered_context. Không bịa sao, không bịa ý nghĩa thập thần. Không viết dòng bắt đầu bằng dấu #.
+
+[KỶ LUẬT TRÌNH BÀY]: Đúng 4 mục. Mỗi mục một dòng in đậm, rồi mới tới gạch đầu dòng. Giữa các mục để một dòng trống. Cấm viết một khối văn không gạch đầu dòng. Cấm viết mỗi gạch chỉ một câu cụt. Mỗi gạch là một đoạn đời, khoảng 3 đến 5 câu.
+
+**1. Phân tích Âm Dương**
+- Gạch 1: giới tính, âm dương, năm can chi, thuận lý hay nghịch lý.
+- Gạch 2: thuận hoặc nghịch đổi môi trường sống và cách sinh hoạt hằng ngày thế nào. Viết cụ thể, không chung chung.
+- Nếu nguyên liệu có mùa sinh hoặc tiết khí, thêm một gạch: được mùa hay không, sức lực được nâng hay bị hao.
+
+**2. Phân tích Cục và Mệnh**
+- Gọi tên bản mệnh và tên cục.
+- Nói đúng luật ngũ hành trong nguyên liệu: Cục sinh Mệnh, Mệnh sinh Cục, hay khắc. Cục là hoàn cảnh bên ngoài, Mệnh là bản thân.
+- Một đoạn đời: được người nâng đỡ ra sao, hay phải tự xoay sở ra sao.
+- Nếu nguyên liệu có mệnh vô chính diệu hoặc mệnh hung nhi cát, thêm một gạch giải thích việc đó trong đời sống.
+
+**3. Tổng quan tính cách từ Tứ Trụ**
+- Một gạch cho trụ Năm, một gạch cho Tháng, một gạch cho Ngày, một gạch cho Giờ. Mỗi gạch ghi can, chi, nạp âm, ngũ hành của can, rồi tính cách rút từ luật sinh khắc.
+- **Xu hướng tích cực:** chuỗi ngũ hành tương sinh có thật trong bốn trụ, rồi việc đó giúp người này học và làm việc thế nào.
+- **Xu hướng mâu thuẫn:** cặp ngũ hành tương khắc có thật trong bốn trụ, rồi sự giằng xé trong lòng thể hiện ra đời sống thế nào.
+
+**4. Lời khuyên ứng dụng**
+- Đúng 3 gạch, mỗi gạch 3 đến 5 câu, đúng chủ đề trong điều kiện tuổi. Nhóm trẻ em viết sức khỏe, học hành, cha mẹ. Nhóm thanh niên viết thi cử, tâm sinh lý, tình cảm học trò. Nhóm trưởng thành viết sự nghiệp, tiền bạc, bản thân. Nhóm trên 60 viết sức khỏe, tinh thần, con cháu."""
+
+HE_MUOI_HAI_CUNG = """Bạn là một chuyên gia tư vấn Tử Vi thực tế, chân thành và logic. Giọng văn mộc mạc, dễ hiểu, nói thẳng việc đời. Không hoa mỹ, không ẩn dụ.
+Chỉ dùng sao, cung, Tuần, Triệt và đoạn sách có trong filtered_context. Không bịa sao. Không mở đầu bằng "Sách nói". Không viết dòng bắt đầu bằng dấu #.
+
+[KỶ LUẬT TRÌNH BÀY]: Đủ 12 cung, đúng thứ tự nguyên liệu. Mỗi cung cách nhau một dòng trống. Đúng 3 gạch đầu dòng. Mỗi gạch là một đoạn 4 đến 6 câu, không phải một câu cụt. Phải gọi tên sao và tên cung đã có trong nguyên liệu, rồi nói việc đó nghĩa là gì ngoài đời.
+
+Viết mỗi cung đúng mẫu sau:
+
+**[Số]. Cung [TÊN CUNG] (tại [Địa chi]) - chủ về [việc của cung]**
+- **Thực tế cuộc sống:** chính tinh, phụ tinh, Tuần hoặc Triệt, hạn tuổi nếu có. Rồi nói đúng việc của cung theo độ tuổi, không viết chủ đề bị cấm.
+- **Tác động Tam hợp (Bề nổi):** gọi tên hai cung tam hợp và sao tại đó. Rồi những việc công khai bên ngoài.
+- **Tác động Nhị hợp (Bề chìm):** gọi tên cung nhị hợp và sao tại đó. Rồi việc ngầm, góc khuất, sự ràng buộc tác động lên đương số."""
+
+HE_THANG = """Bạn là chuyên gia tư vấn Tử Vi thực tế. Viết vận hạn năm nay bằng ngôn ngữ đời thường, mộc mạc.
 [QUY TẮC HÀNH VĂN BẮT BUỘC]:
 1. KHÔNG giải thích lý thuyết sao. Cấm viết kiểu "Tháng này có Hóa Kỵ nên..." hoặc "Sách nói sao này nghĩa là...".
-2. Viết bằng ngôn ngữ đời thường, mộc mạc, đi thẳng vào vấn đề.
-3. Trình bày mỗi tháng thành một mục rõ ràng. Dưới mỗi tháng bắt buộc có đúng 3 gạch đầu dòng:
-- Sự nghiệp và tiền bạc: gặp thuận lợi gì, rủi ro mất tiền ở đâu.
-- Tình cảm và gia đạo: có mâu thuẫn hay niềm vui gì.
-- Hành động cốt lõi: một lời khuyên thực tế, cụ thể. Nên làm gì, tuyệt đối tránh làm gì trong tháng này.
-Chỉ dùng nguyên liệu trong filtered_context. Không bịa sao, không đổi tháng sang cung khác. Không viết dòng bắt đầu bằng dấu #."""
+2. Đi thẳng vào việc đời, đúng chủ đề độ tuổi.
+3. Không bịa sao, không đổi tháng sang cung khác. Không viết dòng bắt đầu bằng dấu #."""
+
+
+def _nam_dang_xem(chart: Chart) -> tuple[dict, int, str]:
+    """Tuổi mụ chỉ để tìm cung hạn. Tuổi dương lịch để lọc chủ đề."""
+    _, _, nam_goc = nam_sinh(chart)
+    tuoi = NAM_XEM - nam_goc
+    nam = mot_nam(chart, NAM_XEM - nam_goc + 1, NAM_XEM)
+    return nam, tuoi, nam["can_chi"].split()[0]
+
+
+def nguyen_lieu_nam(chart: Chart) -> str:
+    """Phần 1 chương 3: Lưu Thái Tuế và tứ hóa của năm đang xem."""
+    nam, tuoi, can = _nam_dang_xem(chart)
+    thai = nam["sao_luu"]["Lưu Thái Tuế"]
+    sao = "; ".join(f"{ten} tại {house.ten} ({house.vi_tri})" for ten, house in nam["sao_luu"].items())
+    khoi = [
+        dieu_kien_tuoi(tuoi),
+        f"Năm {nam['nam']} {nam['can_chi']}, đương số {tuoi} tuổi. "
+        f"Lưu Thái Tuế tại cung {thai.ten} ({thai.vi_tri}): {ten_chinh(thai)}. "
+        f"Việc của cung đó: {viec_cung(thai.ten, tuoi)}. "
+        f"Các sao lưu: {sao}.",
+        dong_tu_hoa(chart, can),
+        dong_hoa_ky(can, TU_HOA[can][3]),
+    ]
+    return ghep_ngan(khoi, 1400)
 
 
 def nguyen_lieu_chuong_3(chart: Chart, _nhan: dict, muc: list[tuple[str, str]]) -> str:
-    """12 tháng âm lịch, mỗi tháng kèm sao đang đóng tại cung đó."""
-    _, _, nam_goc = nam_sinh(chart)
-    nam_nay = 2026
-    tuoi = nam_nay - nam_goc + 1
-    nam = mot_nam(chart, tuoi, nam_nay)
+    """Phần 2 chương 3: 12 tháng âm lịch, mỗi tháng kèm sao tại cung đó."""
+    nam, tuoi, can = _nam_dang_xem(chart)
     thang_sinh, gio_sinh = thang_gio_sinh(chart)
     cac_thang = luu_nguyet(nam["tieu_han"].vi_tri, thang_sinh, gio_sinh)
-    can = nam["can_chi"].split()[0]
     bo = TU_HOA.get(can, ())
     hoa: dict[str, tuple[str, House]] = {}
     for ten_hoa, ten_sao in zip(TEN_HOA, bo):
@@ -708,10 +933,12 @@ def nguyen_lieu_chuong_3(chart: Chart, _nhan: dict, muc: list[tuple[str, str]]) 
         if nha is not None:
             hoa[ten_hoa] = (ten_sao, nha)
     dong = [
-        f"Năm {nam['nam']} {nam['can_chi']}, tuổi {nam['tuoi']}. "
+        dieu_kien_tuoi(tuoi),
+        f"Năm {nam['nam']}, đương số {tuoi} tuổi. "
         f"Tiểu hạn tại cung {nam['tieu_han'].ten} ({nam['tieu_han'].vi_tri}) là mốc đếm tháng Giêng. "
         f"Tháng sinh {thang_sinh}, giờ sinh {gio_sinh}. "
-        "12 tháng dưới đây đã tính xong. Viết đúng cung của từng tháng."
+        "12 tháng dưới đây đã tính xong. Viết đúng cung của từng tháng. "
+        "Mỗi tháng phải khớp bức tranh cả năm ở phần 1, và đúng chủ đề độ tuổi."
     ]
     sao_chinh: list[str] = []
     for so, chi in enumerate(cac_thang, start=1):
@@ -719,7 +946,7 @@ def nguyen_lieu_chuong_3(chart: Chart, _nhan: dict, muc: list[tuple[str, str]]) 
         luu = [ten for ten, nha in nam["sao_luu"].items() if nha.vi_tri == chi]
         hoa_o = [f"{ten_hoa} là {ten_sao}" for ten_hoa, (ten_sao, nha) in hoa.items() if nha.vi_tri == chi]
         dong.append(
-            f"Tháng {so}: cung {house.ten} tại {chi}. Việc của cung: {VIEC_CUNG.get(house.ten, 'việc của cung này')}. "
+            f"Tháng {so}: cung {house.ten} tại {chi}. Việc của cung: {viec_cung(house.ten, tuoi)}. "
             f"{tom_tat(house)}. "
             f"Sao lưu năm nay tại đây: {', '.join(luu) or 'không'}. "
             f"Tứ hóa năm nay tại đây: {', '.join(hoa_o) or 'không'}."
@@ -745,7 +972,7 @@ def nguyen_lieu_chuong_3(chart: Chart, _nhan: dict, muc: list[tuple[str, str]]) 
     return ghep_ngan(khoi, 1800)
 
 
-def nguyen_lieu_chuong_4(_chart: Chart) -> str:
+def nguyen_lieu_chuong_4(chart: Chart) -> str:
     trach = doc_tri_thuc("knowledge_trachcat.json")
     if not trach or not trach.get("thap_nhi_truc"):
         return (
@@ -753,7 +980,10 @@ def nguyen_lieu_chuong_4(_chart: Chart) -> str:
             "Dừng bài. Không viết dự báo 12 tháng, không lập ngày Tý Sửu, không bịa việc nên làm."
         )
     dong = [
-        "12 Trực lấy từ knowledge_trachcat.json. "
+        dieu_kien_tuoi(tuoi_duong(chart)),
+        "12 Trực lấy từ knowledge_trachcat.json. Đây là nghĩa gốc. "
+        "Trước khi ghi bảng, dịch nghĩa đó sang việc đúng tuổi đương số.\n"
+        + chi_thi_truc(tuoi_duong(chart)),
         "File không ghi ngày Tý, Sửu, Dần, Mão, Thìn, Tỵ, Ngọ, Mùi, Thân, Dậu, Tuất, Hợi thuộc Trực nào. "
         "Không được tự gán Trực cho những ngày đó."
     ]
@@ -764,55 +994,81 @@ def nguyen_lieu_chuong_4(_chart: Chart) -> str:
 
 def khoi_bon_chuong(chart: Chart, nhan: dict, muc: list[tuple[str, str]]) -> list[Viec]:
     kiem_bang_lien_he()
+    tuoi = tuoi_duong(chart)
+    rang = dieu_kien_tuoi(tuoi)
+    yeu_cau_thang = (
+        "Đây là Phần 2. Dựa trên bức tranh toàn cảnh ở Phần 1, viết đủ 12 tháng âm lịch, đúng cung đã tính.\n"
+        "Mỗi tháng một mục, đúng 3 gạch đầu dòng:\n"
+        f"{gach_thang(tuoi)}\n"
+        "Không giải thích lý thuyết sao. Không đổi tháng sang cung khác.\n"
+        + rang
+    )
     yeu_cau = [
         (
             "Chương 1: Tổng quan bản mệnh và đại cục",
-            "Phân tích âm dương thuận hay nghịch. Phân tích Cục và Mệnh: Cục sinh Mệnh thì cuộc đời được nâng thế nào, "
-            "Mệnh khắc Cục thì nghịch cảnh ra sao. Tổng quan tính cách cốt lõi từ bốn trụ năm, tháng, ngày, giờ, "
-            "chỉ bằng luật ngũ hành đã cho.",
+            "Viết đúng 4 mục, in đậm tiêu đề, rồi gạch đầu dòng. Mỗi gạch là một đoạn 3 đến 5 câu, không viết một câu cụt.\n"
+            "**1. Phân tích Âm Dương:** giới tính và thuận hay nghịch; đoạn đời về môi trường sống; nếu có mùa sinh hoặc tiết khí thì nói được mùa hay bị hao sức.\n"
+            "**2. Phân tích Cục và Mệnh:** gọi tên bản mệnh và cục, nói sinh hay khắc, Cục là hoàn cảnh còn Mệnh là bản thân, rồi việc được nâng đỡ hoặc phải tự xoay. Nếu có vô chính diệu hoặc mệnh hung nhi cát thì giải thích thêm.\n"
+            "**3. Tổng quan tính cách từ Tứ Trụ:** một gạch cho Năm, Tháng, Ngày, Giờ, ghi can, chi, nạp âm và ngũ hành của can. Rồi một gạch xu hướng tích cực theo tương sinh, một gạch xu hướng mâu thuẫn theo tương khắc. Không bịa ý nghĩa thập thần.\n"
+            "**4. Lời khuyên ứng dụng:** đúng 3 gạch theo điều kiện tuổi. Trẻ em viết sức khỏe, học hành, cha mẹ. "
+            "Thanh niên viết thi cử, tâm sinh lý, tình cảm học trò. Trưởng thành viết sự nghiệp, tiền bạc, bản thân. "
+            "Trên 60 tuổi viết sức khỏe, tinh thần, con cháu.\n"
+            + rang,
             nguyen_lieu_chuong_1(chart, nhan),
             1400,
-            "",
+            gan_tuoi(HE_TONG_QUAN, tuoi),
         ),
         (
             "Chương 2: Giải mã 12 cung và tương tác ngầm",
-            "Đi lần lượt 12 cung. Mỗi cung một đoạn về sự nghiệp, sức khỏe, gia đình hoặc tiền bạc, đúng việc của cung đó. "
-            "Bắt buộc nói tam hợp là bề nổi và nhị hợp là bề chìm tác động lên sao tại bản cung như thế nào. "
-            "Không liệt kê lý thuyết từng sao.",
+            "Duyệt đủ 12 cung. Mỗi cung đúng 3 gạch đầu dòng. Mỗi gạch là một đoạn 4 đến 6 câu, gọi tên sao và cung có trong nguyên liệu, rồi nói việc đời. Cấm viết mỗi ý một câu cụt.\n"
+            "**[Số]. Cung [TÊN CUNG] (tại [Địa chi]) - chủ về [việc của cung]**\n"
+            "- **Thực tế cuộc sống:** chính tinh, phụ tinh, Tuần hoặc Triệt, hạn tuổi, rồi đúng việc của cung theo độ tuổi.\n"
+            "- **Tác động Tam hợp (Bề nổi):** hai cung tam hợp và sao tại đó, rồi việc công khai, đúng chủ đề tuổi.\n"
+            "- **Tác động Nhị hợp (Bề chìm):** cung nhị hợp và sao tại đó, rồi việc ngầm, đúng chủ đề tuổi.\n"
+            "Không hoa mỹ. Không mở đầu bằng Sách nói.\n"
+            + rang,
             nguyen_lieu_chuong_2(chart, nhan, muc),
-            1800,
-            "",
+            2000,
+            gan_tuoi(HE_MUOI_HAI_CUNG, tuoi),
         ),
         (
-            "Chương 3: Vận hạn 12 tháng",
-            "Viết dự báo đủ 12 tháng âm lịch, đúng cung đã tính trong nguyên liệu.\n"
-            "Không giải thích lý thuyết sao. Cấm viết 'Tháng này có Hóa Kỵ nên...' hoặc 'Sách nói sao này nghĩa là...'.\n"
-            "Ngôn ngữ đời thường, mộc mạc, đi thẳng vào việc.\n"
-            "Mỗi tháng một mục. Dưới mỗi tháng bắt buộc có đúng 3 gạch đầu dòng:\n"
-            "- Sự nghiệp và tiền bạc: gặp thuận lợi gì, rủi ro mất tiền ở đâu.\n"
-            "- Tình cảm và gia đạo: có mâu thuẫn hay niềm vui gì.\n"
-            "- Hành động cốt lõi: một lời khuyên thực tế. Nên làm gì, tuyệt đối tránh làm gì trong tháng này.",
-            nguyen_lieu_chuong_3(chart, nhan, muc),
-            1800,
-            HE_THANG,
+            "Chương 3: Vận hạn năm nay",
+            "Viết Phần 1, bức tranh toàn cảnh năm nay. "
+            "Nói Lưu Thái Tuế kích hoạt cung nào. "
+            "Nói Hóa Lộc, Hóa Quyền, Hóa Khoa, Hóa Kỵ đóng ở cung nào. "
+            "Rồi những sự kiện lớn đương số gặp trong năm, đúng chủ đề độ tuổi. "
+            "Chưa viết 12 tháng. Không giải thích lý thuyết sao.\n"
+            + rang,
+            nguyen_lieu_nam(chart),
+            1400,
+            gan_tuoi(HE_THANG, tuoi),
         ),
         (
             "Chương 4: Cẩm nang hành động",
-            "Dựa vào 12 Trực trong nguyên liệu, tạo một bảng tra cứu nhanh ngày tốt xấu.\n"
-            "Trình bày bằng bảng Markdown đúng 3 cột: Tên Trực | Cát/Hung | Việc nên làm và việc cấm kỵ.\n"
-            "Mỗi Trực một dòng. Lời khuyên cực ngắn, chỉ việc file đã nói. "
-            "Ví dụ cách viết: 'Tuyệt đối không ký hợp đồng', 'Tốt để đòi nợ'.\n"
+            "Dựa vào 12 Trực trong nguyên liệu, dịch nghĩa gốc sang việc đúng tuổi đương số, rồi lập bảng tra cứu.\n"
+            "Bảng Markdown đúng 3 cột: Tên Trực | Cát/Hung | Việc nên làm và việc cấm kỵ.\n"
+            "Mỗi Trực một dòng. Lời khuyên cực ngắn, mộc mạc, khớp lứa tuổi. "
+            "Cát/Hung giữ đúng file. Việc nên làm và việc cấm thì dịch theo chỉ thị tuổi, không chép nguyên chữ người lớn nếu đương số không thuộc nhóm trưởng thành.\n"
+            "Trong ô việc, viết **Nên:** một câu, rồi đúng cụm <br>, rồi **Kỵ:** một câu.\n"
             "File không ghi ngày Tý, Sửu thuộc Trực nào. Không được gán.\n"
-            "Cuối bảng viết một đoạn ngắn: người đọc mở lịch vạn niên, xem hôm nay là Trực gì, rồi dò đúng dòng trong bảng để biết nên làm gì và tránh gì.",
+            "Cuối bảng một đoạn ngắn: mỗi ngày mở trang Việc nên làm hôm nay trong ứng dụng, "
+            "ghi đúng dạng [Việc nên làm hôm nay](/ngay), để xem Trực và việc đúng tuổi. "
+            "Không bảo mở lịch giấy hay ứng dụng lịch bên ngoài. Trẻ em thì người lớn mở giúp.\n"
+            + chi_thi_truc(tuoi),
             nguyen_lieu_chuong_4(chart),
             1400,
-            "",
+            gan_tuoi(HE_THONG, tuoi) + "\n\n" + chi_thi_truc(tuoi),
         ),
     ]
-    return [
+    cac = [
         Viec(tieu, prompt_chuong(tieu, cau, filtered, tran), goi=True, ca_phu=False, he_thong=he)
         for tieu, cau, filtered, tran, he in yeu_cau
     ]
+    for mot in cac:
+        if mot.tieu.startswith("Chương 3"):
+            mot.yeu_cau_sau = yeu_cau_thang
+            mot.nguyen_lieu_sau = nguyen_lieu_chuong_3(chart, nhan, muc)
+    return cac
 
 
 def tao_viec(chart: Chart, nhan: dict, muc: list[tuple[str, str]], day_du: bool) -> list[Viec]:
@@ -1006,11 +1262,11 @@ def prompt_mot_nam(chart: Chart, nhan: dict, muc: list[tuple[str, str]], nam: di
     return prompt_ke_chuyen(f"năm {nam['nam']} tuổi {nam['tuoi']}", ghep_ngan(manh))
 
 
-CACH_VIET = "Cách viết: 4 chương, 12 thang"
+CACH_VIET = "Cách viết: 4 chương, truc theo tuoi"
 TIEU_CHUONG = (
     "Chương 1: Tổng quan bản mệnh và đại cục",
     "Chương 2: Giải mã 12 cung và tương tác ngầm",
-    "Chương 3: Vận hạn 12 tháng",
+    "Chương 3: Vận hạn năm nay",
     "Chương 4: Cẩm nang hành động",
 )
 
@@ -1168,8 +1424,26 @@ def xuat_report() -> None:
 
 
 def viet_mot_phan(viec: Viec) -> str:
-    """Một lần gọi. Không viết lại để liệt kê sao, vì prompt kể chuyện cấm kiểu đó."""
-    return goi_ai(viec.he_thong or HE_THONG, viec.noi_dung)
+    """Chương 3 gọi hai lần: bức tranh cả năm, rồi mới tới 12 tháng."""
+    he = viec.he_thong or HE_THONG
+    van = goi_ai(he, viec.noi_dung)
+    if not viec.nguyen_lieu_sau:
+        return van
+    time.sleep(4)
+    print("  Phần 2: 12 tháng", flush=True)
+    yeu = (
+        viec.yeu_cau_sau
+        + "\n\nBức tranh phần 1 đã viết. Tháng nào cũng phải khớp ý này, và đúng độ tuổi:\n"
+        + van.strip()
+    )
+    prompt = prompt_chuong("Phần 2 của chương 3", yeu, viec.nguyen_lieu_sau, 1800)
+    thang = goi_ai(he, prompt)
+    return (
+        "**Phần 1. Bức tranh toàn cảnh năm nay**\n\n"
+        + van.strip()
+        + "\n\n**Phần 2. Chi tiết 12 tháng**\n\n"
+        + thang.strip()
+    )
 
 
 def viet_lai_bai() -> None:
@@ -1261,6 +1535,7 @@ def main() -> None:
 
     da_co = doc_bai_cu() if args.day_du and dung_kieu_ke() else {}
     con_lai = sum(1 for mot in viec if mot.goi and mot.tieu not in da_co)
+    con_lai += sum(1 for mot in viec if mot.nguyen_lieu_sau and mot.tieu not in da_co)
     print(f"Sẽ gọi AI {con_lai} lần. Giữ {len([mot for mot in viec if mot.goi]) - con_lai} phần đã viết.")
     print(f"Ghi vào thư mục: {KET_QUA.parent}")
     xong: list[tuple[str, str]] = []

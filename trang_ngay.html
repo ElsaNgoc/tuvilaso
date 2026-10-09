@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Việc hôm nay</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #f3f0ea;
+    color: #1c1915;
+    font: 17px/1.5 "Segoe UI", sans-serif;
+  }
+  a.ve { color: #1f4d3a; }
+  .thanh-tren {
+    max-width: 32rem;
+    margin: 0 auto;
+    padding: 1rem 1.1rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .nut-mo {
+    background: #fff;
+    color: #1c1915;
+    border: 1px solid #e4dccf;
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    font: 600 0.9rem/1 "Segoe UI", sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .nut-mo.dang { background: #1f4d3a; color: #fff; border-color: #1f4d3a; }
+  #chon-nguoi { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.7rem; }
+  main { max-width: 32rem; margin: 0 auto; padding: 1rem 1.1rem 3rem; }
+  .the {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(40, 30, 10, 0.08);
+    padding: 1.4rem 1.3rem 1.2rem;
+  }
+  .dau {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: #6b645b;
+    font-size: 0.95rem;
+  }
+  .dau strong { display: block; color: #1c1915; font-size: 1.05rem; margin-top: 0.15rem; }
+  .truc { margin: 1.3rem 0 0.2rem; font-size: 2.4rem; font-weight: 700; letter-spacing: -0.03em; }
+  .loai { margin: 0 0 1rem; font-weight: 650; }
+  .cat { color: #17803d; }
+  .hung { color: #c4271b; }
+  .binh { color: #a16207; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+    border-top: 1px solid #eee7dc;
+  }
+  .dau-muc {
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    flex: none;
+    margin-top: 0.1rem;
+  }
+  .nen { background: #e7f6ec; color: #17803d; }
+  .cam { background: #fde8e6; color: #c4271b; }
+  .chu-nho { color: #6b645b; font-size: 0.92rem; margin: 1rem 0 0; }
+  .loi { color: #8a1f1f; }
+</style>
+</head>
+<body>
+<header class="thanh-tren">
+  <a class="ve" href="/">Về trang chính</a>
+  <a class="nut-mo" id="goc-phai" href="/?dang-nhap=1">Đăng nhập</a>
+</header>
+<main>
+  <div id="chon-nguoi"></div>
+  <section class="the" id="daily-action-widget" aria-live="polite">
+    <p class="chu-nho">Đang lấy ngày...</p>
+  </section>
+</main>
+<script src="/thu_vien/lunar.js"></script>
+<script>
+const CAN_VIET = {"甲":"Giáp","乙":"Ất","丙":"Bính","丁":"Đinh","戊":"Mậu","己":"Kỷ","庚":"Canh","辛":"Tân","壬":"Nhâm","癸":"Quý"};
+const CHI_VIET = {"子":"Tý","丑":"Sửu","寅":"Dần","卯":"Mão","辰":"Thìn","巳":"Tỵ","午":"Ngọ","未":"Mùi","申":"Thân","酉":"Dậu","戌":"Tuất","亥":"Hợi"};
+const VONG_CHI = ["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+const VONG_TRUC = ["Kiến","Trừ","Mãn","Bình","Định","Chấp","Phá","Nguy","Thành","Thu","Khai","Bế"];
+
+function dichCanChi(cum) {
+  return (CAN_VIET[cum[0]] || cum[0]) + " " + (CHI_VIET[cum[1]] || cum[1]);
+}
+
+function trucHomNay(chiThang, chiNgay) {
+  const lech = (VONG_CHI.indexOf(chiNgay) - VONG_CHI.indexOf(chiThang) + 12) % 12;
+  return VONG_TRUC[lech];
+}
+
+function thoat(chu) {
+  return String(chu).replace(/[&<>"]/g, (ky) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ky]));
+}
+
+function mauLoai(catHung) {
+  if (catHung === "Cát") return "cat";
+  if (catHung === "Hung") return "hung";
+  return "binh";
+}
+
+class DailyActionWidget {
+  constructor(hop) {
+    this.hop = hop;
+  }
+
+  async ve() {
+    const mat = Solar.fromDate(new Date());
+    const am = mat.getLunar();
+    const chiThang = CHI_VIET[am.getMonthZhi()];
+    const chiNgay = CHI_VIET[am.getDayZhi()];
+    const trucMay = trucHomNay(chiThang, chiNgay);
+    const thangAm = Math.abs(am.getMonth());
+    const chuThang = (am.getMonth() < 0 ? "nhuận " : "") + thangAm;
+    const duong = mat.getDay() + "/" + mat.getMonth() + "/" + mat.getYear();
+    const amChu = "Ngày " + dichCanChi(am.getDayInGanZhi()) + ", tháng " + chuThang + " (" + dichCanChi(am.getMonthInGanZhi()) + ")";
+    let data;
+    try {
+      const ma = sessionStorage.getItem("laSo") || "";
+      const tra = await fetch("/api/hom-nay?ma=" + encodeURIComponent(ma) + "&chi_thang=" + encodeURIComponent(chiThang) + "&chi_ngay=" + encodeURIComponent(chiNgay));
+      data = await tra.json();
+      if (!tra.ok) throw new Error(data.loi || "Không lấy được lời khuyên.");
+    } catch (loi) {
+      this.hop.innerHTML = '<p class="loi">' + (loi.message || "Không nối được.") + "</p>";
+      return;
+    }
+    const truc = data.truc || trucMay;
+    const mau = mauLoai(data.cat_hung);
+    const tuoi = data.tuoi == null
+      ? "Hãy dán một lá số ở trang chính để có lời khuyên đúng tuổi."
+      : (data.ten_nguoi ? data.ten_nguoi + ", " : "") + "sinh năm " + data.nam_sinh + ", năm nay " + data.tuoi + " tuổi.";
+    this.hop.innerHTML = [
+      '<div class="dau"><div>Dương lịch<strong>' + duong + '</strong></div><div>Âm lịch<strong>' + amChu + '</strong></div></div>',
+      '<div class="truc ' + mau + '">Trực ' + thoat(truc) + '</div>',
+      '<p class="loai ' + mau + '">' + thoat(data.cat_hung || "") + "</p>",
+      "<ul>",
+      '<li><span class="dau-muc nen" aria-hidden="true">✓</span><div><strong>Nên làm.</strong> ' + thoat(data.nen) + "</div></li>",
+      '<li><span class="dau-muc cam" aria-hidden="true">✕</span><div><strong>Tuyệt đối tránh.</strong> ' + thoat(data.cam) + "</div></li>",
+      "</ul>",
+      '<p class="chu-nho">' + thoat(tuoi) + "</p>"
+    ].join("");
+  }
+}
+
+const widget = new DailyActionWidget(document.getElementById("daily-action-widget"));
+widget.ve();
+
+fetch("/la-so").then(async (tra) => {
+  if (!tra.ok) return;
+  const ds = await tra.json();
+  if (ds.length < 2) return;
+  const hop = document.getElementById("chon-nguoi");
+  const dang = sessionStorage.getItem("laSo") || String(ds[0].ma);
+  ds.forEach((mot) => {
+    const nut = document.createElement("button");
+    nut.type = "button";
+    nut.className = "nut-mo" + (String(mot.ma) === dang ? " dang" : "");
+    nut.textContent = mot.ten;
+    nut.addEventListener("click", () => {
+      sessionStorage.setItem("laSo", String(mot.ma));
+      hop.querySelectorAll("button").forEach((n) => n.classList.remove("dang"));
+      nut.classList.add("dang");
+      widget.ve();
+    });
+    hop.appendChild(nut);
+  });
+});
+
+fetch("/toi").then(async (tra) => {
+  const data = await tra.json();
+  if (!data.ten) return;
+  const goc = document.getElementById("goc-phai");
+  goc.textContent = "";
+  goc.removeAttribute("href");
+  const chu = document.createElement("span");
+  chu.textContent = data.ten + " ";
+  const nut = document.createElement("button");
+  nut.type = "button";
+  nut.className = "nut-mo";
+  nut.textContent = "Thoát";
+  nut.addEventListener("click", async () => {
+    await fetch("/dang-xuat", { method: "POST" });
+    location.href = "/ngay";
+  });
+  goc.append(chu, nut);
+});
+</script>
+</body>
+</html>
