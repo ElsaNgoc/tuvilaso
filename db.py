@@ -1,13 +1,16 @@
 """
-Tạo file database du_lieu/tuvilaso.db.
+Tạo các bảng.
 
-Chạy lại lệnh này cũng được, bảng đã có thì giữ nguyên:
+Máy nhà dùng file du_lieu/tuvilaso.db.
+Khi có TURSO_DATABASE_URL và TURSO_AUTH_TOKEN, các bảng nằm ở Turso.
+Render chỉ chạy trang, không giữ data.
 
     .\\venv\\Scripts\\python.exe db.py
 """
 
 from __future__ import annotations
 
+import os
 import sqlite3
 from pathlib import Path
 
@@ -78,15 +81,91 @@ CREATE INDEX IF NOT EXISTS hoi_theo_la_so ON hoi_dap(ma_la_so);
 """
 
 
-def mo() -> sqlite3.Connection:
-    THU_MUC.mkdir(parents=True, exist_ok=True)
-    ket = sqlite3.connect(TEP)
-    ket.row_factory = sqlite3.Row
-    ket.execute("PRAGMA foreign_keys = ON")
-    return ket
+class Dong(dict):
+    """Một dòng, lấy theo tên cột hoặc theo số thứ tự."""
+
+    def __getitem__(self, khoa):
+        if isinstance(khoa, int):
+            return list(self.values())[khoa]
+        return dict.__getitem__(self, khoa)
 
 
-def _them_cot(ket: sqlite3.Connection, bang: str, cot: str, kieu: str) -> None:
+class Bang:
+    def __init__(self, con_tro):
+        self.con_tro = con_tro
+
+    def _dong(self, hang):
+        if hang is None:
+            return None
+        if isinstance(hang, sqlite3.Row):
+            return hang
+        ten = [cot[0] for cot in self.con_tro.description]
+        return Dong(zip(ten, hang))
+
+    def fetchone(self):
+        return self._dong(self.con_tro.fetchone())
+
+    def fetchall(self):
+        return [self._dong(hang) for hang in self.con_tro.fetchall()]
+
+    def __iter__(self):
+        for hang in self.con_tro:
+            yield self._dong(hang)
+
+
+class KetNoi:
+    def __init__(self, goc):
+        self.goc = goc
+
+    def execute(self, cau, tham=()):
+        return Bang(self.goc.execute(cau, tham))
+
+    def executescript(self, chuoi: str) -> None:
+        if hasattr(self.goc, "executescript"):
+            self.goc.executescript(chuoi)
+            return
+        for cau in chuoi.split(";"):
+            if cau.strip():
+                self.goc.execute(cau)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, loai, _gia, _vet) -> bool:
+        if loai is None:
+            self.goc.commit()
+        else:
+            self.goc.rollback()
+        self.goc.close()
+        return False
+
+
+def _tai_env() -> None:
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv(ROOT / ".env")
+    except Exception:
+        return
+
+
+def mo() -> KetNoi:
+    _tai_env()
+    url = os.environ.get("TURSO_DATABASE_URL", "").strip()
+    token = os.environ.get("TURSO_AUTH_TOKEN", "").strip()
+    if url and token:
+        import turso_serverless
+
+        goc = turso_serverless.connect(url, auth_token=token)
+    else:
+        THU_MUC.mkdir(parents=True, exist_ok=True)
+        goc = sqlite3.connect(TEP)
+        goc.row_factory = sqlite3.Row
+        goc.execute("PRAGMA foreign_keys = ON")
+    return KetNoi(goc)
+
+
+def _them_cot(ket: KetNoi, bang: str, cot: str, kieu: str) -> None:
     co = {dong[1] for dong in ket.execute(f"PRAGMA table_info({bang})")}
     if cot not in co:
         ket.execute(f"ALTER TABLE {bang} ADD COLUMN {cot} {kieu}")
@@ -97,6 +176,7 @@ def tao() -> Path:
         ket.executescript(LENH)
         _them_cot(ket, "tai_khoan", "email", "TEXT")
         _them_cot(ket, "tai_khoan", "google_sub", "TEXT")
+        _them_cot(ket, "bai_phan_tich", "noi_word", "BLOB")
         ket.execute("CREATE UNIQUE INDEX IF NOT EXISTS tai_khoan_email ON tai_khoan(email)")
         ket.execute("CREATE UNIQUE INDEX IF NOT EXISTS tai_khoan_google ON tai_khoan(google_sub)")
     return TEP
@@ -108,5 +188,8 @@ if __name__ == "__main__":
         bang = [dong[0] for dong in ket.execute(
             "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
         )]
-    print(f"Xong. File: {tep}")
+    if os.environ.get("TURSO_DATABASE_URL", "").strip() and os.environ.get("TURSO_AUTH_TOKEN", "").strip():
+        print("Xong. Các bảng nằm ở Turso.")
+    else:
+        print(f"Xong. File: {tep}")
     print("Các bảng: " + ", ".join(bang))

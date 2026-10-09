@@ -123,10 +123,10 @@ def hoan_tat(ma_la: int, noi_dung: str, tep_word: Path) -> str:
         ket.execute(
             """
             UPDATE bai_phan_tich
-            SET noi_dung = ?, tep_word = ?, trang_thai = 'xong', luc_xong = datetime('now')
+            SET noi_dung = ?, tep_word = ?, noi_word = ?, trang_thai = 'xong', luc_xong = datetime('now')
             WHERE ma_la_so = ? AND nam_xem = ?
             """,
-            (noi_dung, tuong_doi, ma_la, date.today().year),
+            (noi_dung, tuong_doi, Path(tep_word).read_bytes(), ma_la, date.today().year),
         )
     return tuong_doi
 
@@ -205,6 +205,34 @@ def bai_moi(ma: int, ma_tai_khoan: int | None, ma_phien: str) -> dict | None:
         "noi_dung": dong["noi_dung"],
         "tep_word": dong["tep_word"],
     }
+
+
+def byte_word(ma: int, ma_tai_khoan: int | None, ma_phien: str) -> bytes | None:
+    """File Word nằm trong database. Máy nhà còn đọc file cũ nếu dòng chưa có bản nhúng."""
+    if lay_la_so(ma, ma_tai_khoan, ma_phien) is None:
+        return None
+    with mo() as ket:
+        dong = ket.execute(
+            """
+            SELECT noi_word, tep_word FROM bai_phan_tich
+            WHERE ma_la_so = ? AND trang_thai = 'xong'
+            ORDER BY nam_xem DESC LIMIT 1
+            """,
+            (ma,),
+        ).fetchone()
+    if dong is None:
+        return None
+    if dong["noi_word"]:
+        return bytes(dong["noi_word"])
+    duong = dong["tep_word"] or ""
+    if not duong:
+        return None
+    tep = (ROOT / duong).resolve()
+    goc_moi = (ROOT / "du_lieu" / "word").resolve()
+    goc_cu = (ROOT / "output" / "theo_ma").resolve()
+    if not tep.is_file() or (goc_moi not in tep.parents and goc_cu not in tep.parents):
+        return None
+    return tep.read_bytes()
 
 
 def tep_word(ma: int, ma_tai_khoan: int | None, ma_phien: str) -> Path | None:

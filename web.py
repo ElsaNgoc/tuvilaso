@@ -39,7 +39,7 @@ from kho_laso import (
     ma_bai,
     nam_cua,
     noi_bai,
-    tep_word,
+    byte_word,
 )
 from models import load_chart, thu_muc_bao_cao
 from tai_khoan import (
@@ -431,13 +431,13 @@ class TraLoi(BaseHTTPRequestHandler):
                 self.gui(404, "Chưa có file Word.".encode("utf-8"), "text/plain; charset=utf-8")
                 return
             ma_tk, ma_phien, _banh = self.nguoi_dang_nhap()
-            tep = tep_word(int(so), ma_tk, ma_phien)
-            if tep is None:
+            noi_word = byte_word(int(so), ma_tk, ma_phien)
+            if noi_word is None:
                 self.gui(404, "Chưa có file Word.".encode("utf-8"), "text/plain; charset=utf-8")
                 return
             self.gui(
                 200,
-                tep.read_bytes(),
+                noi_word,
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 f"TuVi_{so}.docx",
             )
