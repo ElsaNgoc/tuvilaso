@@ -178,7 +178,7 @@
 <div id="lop" hidden>
   <div class="hop-vao" role="dialog" aria-labelledby="tieu-vao">
     <h2 id="tieu-vao">Đăng nhập bằng Gmail</h2>
-    <p>Đăng nhập sẽ lưu trữ lịch sử phân tích lá số tử vi.</p>
+    <p>Đăng nhập sẽ lưu trữ lịch sử phân tích lá số tử vi và các câu hỏi về lá số.</p>
     <div id="nut-google"></div>
     <p class="loi" id="loi-google" hidden></p>
     <div class="hang-nut">
@@ -354,7 +354,19 @@ form.addEventListener("submit", async (su_kien) => {
   su_kien.preventDefault();
   nut.disabled = true;
   hop.className = "";
-  hop.textContent = "Đang phân tích...";
+  let conLai = null;
+  const veDem = () => {
+    hop.textContent = conLai == null ? "Đang phân tích..." : "Đang phân tích... còn " + conLai + " giây";
+  };
+  veDem();
+  const dem = setInterval(async () => {
+    try {
+      const tra = await fetch("/tien-do");
+      const data = await tra.json();
+      if (typeof data.con === "number") conLai = data.con;
+    } catch (e) { /* giữ số cũ nếu mạng chập chờn */ }
+    veDem();
+  }, 1000);
   try {
     const tra_loi = await fetch("/phan-tich", {
       method: "POST",
@@ -373,6 +385,7 @@ form.addEventListener("submit", async (su_kien) => {
     hop.className = "loi";
     hop.textContent = "Không nối được với chương trình. Hãy xem cửa sổ đang chạy web.py.";
   } finally {
+    clearInterval(dem);
     nut.disabled = false;
   }
 });

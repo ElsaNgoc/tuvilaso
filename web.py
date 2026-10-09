@@ -17,6 +17,7 @@ import secrets
 import subprocess
 import sys
 import threading
+import time
 import traceback
 import urllib.parse
 from datetime import date
@@ -57,6 +58,17 @@ from nhap_laso import chuyen
 ROOT = Path(__file__).resolve().parent
 CONG = 8765
 KHOA = threading.Lock()
+KHOA_DEM = threading.Lock()
+# Số giây còn lại. Mỗi chương một mức, rồi giảm 1 mỗi giây cho tới khi xong.
+TIEN_DO = {"con": None}
+CAC_BUOC = (
+    ("[1/4]", 405),
+    ("[2/4]", 360),
+    ("[3/4]", 210),
+    ("Phần 2", 160),
+    ("[4/4]", 70),
+    ("Xong.", 15),
+)
 TAM = ROOT / "laso" / "vua_dan.txt"
 
 
@@ -237,6 +249,47 @@ def tim_word(ten: str) -> Path | None:
     return None
 
 
+def dat_con(giay: int | None) -> None:
+    with KHOA_DEM:
+        TIEN_DO["con"] = giay
+
+
+def giam_moi_giay() -> None:
+    while True:
+        time.sleep(1)
+        with KHOA_DEM:
+            con = TIEN_DO["con"]
+            if con is not None and con > 1:
+                TIEN_DO["con"] = con - 1
+
+
+def chay_viet(lenh: list[str], moi_truong: dict) -> tuple[int, str]:
+    """Chạy phần viết bài và chỉnh số giây còn lại theo chương đang viết."""
+    dat_con(CAC_BUOC[0][1] + 25)
+    tien = subprocess.Popen(
+        lenh,
+        cwd=ROOT,
+        env=moi_truong,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    dong_ra: list[str] = []
+    bat_dau = time.time()
+    assert tien.stdout is not None
+    for dong in tien.stdout:
+        dong_ra.append(dong)
+        for moc, giay in CAC_BUOC:
+            if moc in dong:
+                dat_con(giay)
+        if time.time() - bat_dau > 1200:
+            tien.kill()
+            break
+    return tien.wait(), "".join(dong_ra)
+
+
 def phan_tich_bai(bai: str):
     """Đổi bài dán thành lá số, viết báo cáo, trả file Word, tên tải về và HTML để hiện trang."""
     chu = bai.strip()
@@ -263,21 +316,11 @@ def phan_tich_bai(bai: str):
     ]
     moi_truong = dict(os.environ)
     moi_truong["PYTHONIOENCODING"] = "utf-8"
-    ket = subprocess.run(
-        lenh,
-        cwd=ROOT,
-        env=moi_truong,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=1200,
-    )
+    ma_thoat, nhat_ky = chay_viet(lenh, moi_truong)
     word = thu_muc / "TuVi_Report.docx"
     bai_md = thu_muc / "phan_tich.md"
-    if ket.returncode != 0 or not word.is_file() or not bai_md.is_file():
-        duoi = (ket.stdout or "") + "\n" + (ket.stderr or "")
-        raise RuntimeError("Chưa viết xong báo cáo.\n" + duoi[-1200:].strip())
+    if ma_thoat != 0 or not word.is_file() or not bai_md.is_file():
+        raise RuntimeError("Chưa viết xong báo cáo.\n" + nhat_ky[-1200:].strip())
     ten = f"TuVi_{thu_muc.name}.docx"
     return chart, tep_json, word, ten, bai_md.read_text(encoding="utf-8")
 
@@ -342,6 +385,12 @@ class TraLoi(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         duong = urllib.parse.unquote(self.path.split("?", 1)[0])
+        if duong == "/tien-do":
+            with KHOA_DEM:
+                con = TIEN_DO["con"]
+            than = json.dumps({"con": con}).encode("utf-8")
+            self.gui(200, than, "application/json; charset=utf-8")
+            return
         if duong == "/cau-hinh":
             than = json.dumps(
                 {"google_client_id": os.environ.get("GOOGLE_CLIENT_ID", "").strip()},
@@ -522,6 +571,7 @@ class TraLoi(BaseHTTPRequestHandler):
                 danh_loi(ma_la)
             self.gui(500, traceback.format_exc()[-1500:].encode("utf-8"), "text/plain; charset=utf-8", cookie=banh)
         finally:
+            dat_con(None)
             KHOA.release()
 
     def xu_ly_tai_khoan(self, duong: str) -> None:
@@ -602,6 +652,7 @@ def main() -> None:
     load_dotenv(ROOT / ".env")
     tao_db()
     don_khach_cu()
+    threading.Thread(target=giam_moi_giay, daemon=True).start()
     cong = int(os.environ.get("PORT", str(CONG)))
     host = os.environ.get("HOST", "0.0.0.0" if "PORT" in os.environ else "127.0.0.1")
     may = ThreadingHTTPServer((host, cong), TraLoi)
