@@ -114,7 +114,7 @@ def bat_dau(chart: Chart, ban_goc: str, ten_nguoi: str, ma_tai_khoan: int | None
 
 
 def hoan_tat(ma_la: int, noi_dung: str, tep_word: Path) -> str:
-    thu = ROOT / "output" / "theo_ma" / str(ma_la)
+    thu = ROOT / "du_lieu" / "word" / str(ma_la)
     thu.mkdir(parents=True, exist_ok=True)
     dich = thu / "TuVi_Report.docx"
     shutil.copy2(tep_word, dich)
@@ -212,8 +212,9 @@ def tep_word(ma: int, ma_tai_khoan: int | None, ma_phien: str) -> Path | None:
     if bai is None or not bai["tep_word"]:
         return None
     tep = (ROOT / bai["tep_word"]).resolve()
-    goc = (ROOT / "output" / "theo_ma").resolve()
-    if goc not in tep.parents or not tep.is_file():
+    goc_moi = (ROOT / "du_lieu" / "word").resolve()
+    goc_cu = (ROOT / "output" / "theo_ma").resolve()
+    if not tep.is_file() or (goc_moi not in tep.parents and goc_cu not in tep.parents):
         return None
     return tep
 

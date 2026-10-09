@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 .cursor/
 du_lieu/*.db
+du_lieu/word/
 output/
 laso/vua_dan.json
 laso/vua_dan.txt
