@@ -61,7 +61,20 @@
   }
   #goc-phai { display: flex; align-items: center; gap: 0.55rem; }
   #ds-laso { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.8rem; }
+  .the-laso { display: flex; align-items: center; gap: 0.25rem; }
   #ds-laso button.dang { background: #1f4d3a; color: #fff; border-color: #1f4d3a; }
+  .nut-xoa { background: #fff; color: #8a1f1f; border: 1px solid #e4dccf; border-radius: 999px; padding: 0.35rem 0.65rem; font: 600 0.85rem/1 "Segoe UI", sans-serif; cursor: pointer; }
+  .thang-lich { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin: 0.2rem 0 0.6rem; }
+  .thang-lich strong { font-size: 1.15rem; }
+  .o-lich { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; }
+  .o-lich .thu, .o-lich .ngay { border: 1px solid #e4dccf; border-radius: 8px; min-width: 0; }
+  .o-lich .thu { text-align: center; font-size: 0.75rem; color: #6b645b; padding: 0.25rem 0; background: #efe8dc; }
+  .o-lich .ngay { background: #fff; padding: 0.28rem 0.2rem 0.35rem; text-align: center; }
+  .o-lich .ngay.hom { outline: 2px solid #1f4d3a; }
+  .o-lich .so { display: block; font-weight: 700; font-size: 0.95rem; }
+  .o-lich .am { display: block; color: #6b645b; font-size: 0.68rem; line-height: 1.2; }
+  .o-lich .truc { display: block; font-size: 0.68rem; font-weight: 700; line-height: 1.2; }
+  .tieu-bang { margin: 1rem 0 0.2rem; }
   #goi-ten { color: #6b645b; font-size: 0.95rem; }
   .ten-nguoi { font-size: 0.95rem; }
   #lop {
@@ -219,9 +232,15 @@
 
   <section id="lich" hidden>
     <div class="the">
-      <p id="dong-ngay">Đang lấy ngày...</p>
-      <p class="ngay-nay" id="truc-chung"></p>
-      <p>Bảng này dùng chung cho mọi người. Việc đúng tuổi của lá số vừa dán nằm ở <a href="/ngay">Việc nên làm hôm nay</a>.</p>
+      <div class="thang-lich">
+        <button type="button" class="nut-mo" id="thang-truoc">Tháng trước</button>
+        <strong id="tieu-thang">Đang lấy ngày...</strong>
+        <button type="button" class="nut-mo" id="thang-sau">Tháng sau</button>
+      </div>
+      <div class="o-lich" id="luoi-lich"></div>
+      <p id="dong-ngay"></p>
+      <p>Việc đúng tuổi của lá số vừa dán nằm ở <a href="/ngay">Việc nên làm hôm nay</a>.</p>
+      <p class="tieu-bang"><strong>Bảng 12 Trực dùng chung</strong></p>
       <div class="bang-cuon">
       <table>
         <thead><tr><th>Tên Trực</th><th>Cát/Hung</th><th>Việc NÊN làm</th><th>Việc KIÊNG KỴ</th></tr></thead>
@@ -315,12 +334,20 @@ async function taiDanhSach() {
   hop.textContent = "";
   tieu.hidden = ds.length === 0;
   ds.forEach((mot) => {
+    const khay = document.createElement("div");
+    khay.className = "the-laso";
     const nut = document.createElement("button");
     nut.type = "button";
     nut.className = "nut-mo" + (String(mot.ma) === laSo ? " dang" : "");
     nut.textContent = mot.ten + " · " + mot.ngay_sinh;
     nut.addEventListener("click", () => chonLaSo(mot.ma));
-    hop.appendChild(nut);
+    const xoa = document.createElement("button");
+    xoa.type = "button";
+    xoa.className = "nut-xoa";
+    xoa.textContent = "Xóa";
+    xoa.addEventListener("click", () => xoaLaSo(mot));
+    khay.append(nut, xoa);
+    hop.appendChild(khay);
   });
   return ds;
 }
@@ -390,27 +417,86 @@ form.addEventListener("submit", async (su_kien) => {
   }
 });
 
-let daVeLich = false;
-async function veLich() {
-  if (daVeLich) return;
-  const hom = chiHomNay();
-  const ten = trucHomNay(hom.thang, hom.ngay);
-  const tra = await fetch("/api/lich");
-  const danh = await tra.json();
-  document.getElementById("dong-ngay").textContent = "Dương lịch " + hom.duong + " · Âm lịch " + hom.am;
-  const dong = document.getElementById("truc-chung");
-  const muc = danh.find((mot) => mot.ten === ten);
-  dong.textContent = "Hôm nay: Trực " + ten;
-  dong.className = "ngay-nay " + mau(muc ? muc.cat_hung : "");
-  document.getElementById("bang-truc").innerHTML = danh.map((mot) => {
-    const cham = mot.ten === ten ? " class=\"hom-nay\"" : "";
+async function xoaLaSo(mot) {
+  if (!window.confirm("Xóa lá số của " + mot.ten + "?")) return;
+  const tra = await fetch("/xoa-la-so", {
+    method: "POST",
+    headers: { "Content-Type": "application/json;charset=UTF-8" },
+    body: JSON.stringify({ ma: mot.ma }),
+  });
+  if (!tra.ok) {
+    hop.className = "loi";
+    hop.textContent = await tra.text();
+    return;
+  }
+  if (String(mot.ma) === laSo) {
+    sessionStorage.removeItem("laSo");
+    laSo = "";
+    vung.hidden = true;
+    bai.innerHTML = "";
+  }
+  taiDanhSach();
+}
+
+let duLieuTruc = null;
+const homNay = new Date();
+let namLich = homNay.getFullYear();
+let thangLich = homNay.getMonth() + 1;
+
+function veBangTruc(tenHom) {
+  document.getElementById("bang-truc").innerHTML = duLieuTruc.map((mot) => {
+    const cham = mot.ten === tenHom ? " class=\"hom-nay\"" : "";
     const khong = String(mot.kieng).indexOf("Không có") >= 0;
     const dauKieng = khong ? "khong" : "kieng";
     const kyHieu = khong ? "–" : "✕";
     return "<tr" + cham + "><td>Trực " + thoat(mot.ten) + "</td><td class=\"" + mau(mot.cat_hung) + "\">" + thoat(mot.cat_hung) + "</td><td><div class=\"o-viec\"><span class=\"dau-viec nen\" aria-hidden=\"true\">✓</span><span>" + thoat(mot.nen) + "</span></div></td><td><div class=\"o-viec\"><span class=\"dau-viec " + dauKieng + "\" aria-hidden=\"true\">" + kyHieu + "</span><span>" + thoat(mot.kieng) + "</span></div></td></tr>";
   }).join("");
-  daVeLich = true;
 }
+
+function veThang() {
+  document.getElementById("tieu-thang").textContent = "Tháng " + thangLich + " năm " + namLich;
+  const luoi = document.getElementById("luoi-lich");
+  const thu = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+  const soNgay = new Date(namLich, thangLich, 0).getDate();
+  const trong = (new Date(namLich, thangLich - 1, 1).getDay() + 6) % 7;
+  let html = thu.map((ten) => "<div class=\"thu\">" + ten + "</div>").join("");
+  for (let i = 0; i < trong; i++) html += "<div></div>";
+  let tenHom = "";
+  for (let ngay = 1; ngay <= soNgay; ngay++) {
+    const mat = Solar.fromYmd(namLich, thangLich, ngay);
+    const am = mat.getLunar();
+    const ten = trucHomNay(CHI_VIET[am.getMonthZhi()], CHI_VIET[am.getDayZhi()]);
+    const muc = duLieuTruc.find((mot) => mot.ten === ten);
+    const laHom = ngay === homNay.getDate() && thangLich === homNay.getMonth() + 1 && namLich === homNay.getFullYear();
+    if (laHom) tenHom = ten;
+    const thangAm = Math.abs(am.getMonth());
+    const chuAm = am.getDay() === 1 ? "mùng 1/" + thangAm + (am.getMonth() < 0 ? " nhuận" : "") : "âm " + am.getDay();
+    html += "<div class=\"ngay" + (laHom ? " hom" : "") + "\"><span class=\"so\">" + ngay + "</span><span class=\"am\">" + thoat(chuAm) + "</span><span class=\"truc " + mau(muc ? muc.cat_hung : "") + "\">" + thoat(ten) + "</span></div>";
+  }
+  luoi.innerHTML = html;
+  const hom = chiHomNay();
+  document.getElementById("dong-ngay").textContent = "Hôm nay dương lịch " + hom.duong + ", âm lịch " + hom.am + ", Trực " + (tenHom || trucHomNay(hom.thang, hom.ngay)) + ".";
+  veBangTruc(tenHom || trucHomNay(hom.thang, hom.ngay));
+}
+
+async function veLich() {
+  if (!duLieuTruc) {
+    const tra = await fetch("/api/lich");
+    duLieuTruc = await tra.json();
+  }
+  veThang();
+}
+
+document.getElementById("thang-truoc").addEventListener("click", () => {
+  thangLich -= 1;
+  if (thangLich < 1) { thangLich = 12; namLich -= 1; }
+  if (duLieuTruc) veThang();
+});
+document.getElementById("thang-sau").addEventListener("click", () => {
+  thangLich += 1;
+  if (thangLich > 12) { thangLich = 1; namLich += 1; }
+  if (duLieuTruc) veThang();
+});
 
 const tro = document.getElementById("tro");
 const formHoi = document.getElementById("form-hoi");

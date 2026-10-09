@@ -173,6 +173,24 @@ def danh_sach(ma_tai_khoan: int | None, ma_phien: str) -> list[dict]:
     return [dict(mot) for mot in hang]
 
 
+def xoa_la_so(ma: int, ma_tai_khoan: int | None, ma_phien: str) -> bool | str:
+    """Xóa một lá số của đúng người. Đang viết thì chưa xóa."""
+    if lay_la_so(ma, ma_tai_khoan, ma_phien) is None:
+        return False
+    with mo() as ket:
+        dang_viet = ket.execute(
+            "SELECT 1 AS co FROM bai_phan_tich WHERE ma_la_so = ? AND trang_thai = 'dang_viet'",
+            (ma,),
+        ).fetchone()
+        if dang_viet is not None:
+            return "dang_viet"
+        ket.execute("DELETE FROM la_so WHERE ma = ?", (ma,))
+    for thu in (ROOT / "du_lieu" / "word" / str(ma), ROOT / "output" / "theo_ma" / str(ma)):
+        if thu.is_dir():
+            shutil.rmtree(thu, ignore_errors=True)
+    return True
+
+
 def lay_la_so(ma: int, ma_tai_khoan: int | None, ma_phien: str):
     with mo() as ket:
         dong = ket.execute("SELECT * FROM la_so WHERE ma = ?", (ma,)).fetchone()

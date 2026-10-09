@@ -41,6 +41,7 @@ from kho_laso import (
     nam_cua,
     noi_bai,
     byte_word,
+    xoa_la_so,
 )
 from models import load_chart, thu_muc_bao_cao
 from tai_khoan import (
@@ -524,6 +525,9 @@ class TraLoi(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         duong = self.path.split("?", 1)[0]
+        if duong == "/xoa-la-so":
+            self.xoa_mot_la_so()
+            return
         if duong == "/hoi":
             self.tra_loi_cau_hoi()
             return
@@ -573,6 +577,26 @@ class TraLoi(BaseHTTPRequestHandler):
         finally:
             dat_con(None)
             KHOA.release()
+
+    def xoa_mot_la_so(self) -> None:
+        try:
+            goi = self.doc_json(2_000)
+        except LoiTaiKhoan as loi:
+            self.gui(400, str(loi).encode("utf-8"), "text/plain; charset=utf-8")
+            return
+        so = str(goi.get("ma", "")).strip()
+        if not so.isdigit():
+            self.gui(400, "Không thấy lá số.".encode("utf-8"), "text/plain; charset=utf-8")
+            return
+        ma_tk, ma_phien, _banh = self.nguoi_dang_nhap()
+        ket = xoa_la_so(int(so), ma_tk, ma_phien)
+        if ket == "dang_viet":
+            self.gui(409, "Lá số đang được viết. Hãy đợi xong rồi xóa.".encode("utf-8"), "text/plain; charset=utf-8")
+            return
+        if not ket:
+            self.gui(404, "Không thấy lá số.".encode("utf-8"), "text/plain; charset=utf-8")
+            return
+        self.gui(200, b"{}", "application/json; charset=utf-8")
 
     def xu_ly_tai_khoan(self, duong: str) -> None:
         if duong == "/dang-xuat":
