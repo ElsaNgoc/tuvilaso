@@ -43,6 +43,7 @@ from kho_laso import (
     byte_word,
     xoa_la_so,
 )
+from hoan_canh import NAM_XEM, bo_cau, user_real_context
 from models import load_chart, thu_muc_bao_cao
 from tai_khoan import (
     LoiTaiKhoan,
@@ -291,7 +292,7 @@ def chay_viet(lenh: list[str], moi_truong: dict) -> tuple[int, str]:
     return tien.wait(), "".join(dong_ra)
 
 
-def phan_tich_bai(bai: str):
+def phan_tich_bai(bai: str, dap: dict):
     """Đổi bài dán thành lá số, viết báo cáo, trả file Word, tên tải về và HTML để hiện trang."""
     chu = bai.strip()
     if len(chu) < 80:
@@ -308,12 +309,22 @@ def phan_tich_bai(bai: str):
         ) from loi
     chart = load_chart(tep_json)
     thu_muc = thu_muc_bao_cao(chart)
+    nam_sinh = int(str(chart.ngay_sinh).strip().split("/")[-1])
+    ma_canh, van_canh = user_real_context(NAM_XEM - nam_sinh, dap)
+    thu_muc.mkdir(parents=True, exist_ok=True)
+    tep_canh = thu_muc / "hoan_canh.json"
+    tep_canh.write_text(
+        json.dumps({"ma": ma_canh, "van": van_canh}, ensure_ascii=False),
+        encoding="utf-8",
+    )
     lenh = [
         sys.executable,
         str(ROOT / "analyze.py"),
         "--laso",
         str(tep_json),
         "--day-du",
+        "--hoan-canh",
+        str(tep_canh),
     ]
     moi_truong = dict(os.environ)
     moi_truong["PYTHONIOENCODING"] = "utf-8"
@@ -390,6 +401,19 @@ class TraLoi(BaseHTTPRequestHandler):
             with KHOA_DEM:
                 con = TIEN_DO["con"]
             than = json.dumps({"con": con}).encode("utf-8")
+            self.gui(200, than, "application/json; charset=utf-8")
+            return
+        if duong == "/cau-hoi":
+            tham = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            so = tham.get("nam_sinh", [""])[0].strip()
+            if not so.isdigit():
+                self.gui(400, "Chưa thấy năm sinh.".encode("utf-8"), "text/plain; charset=utf-8")
+                return
+            try:
+                than = json.dumps(bo_cau(NAM_XEM - int(so)), ensure_ascii=False).encode("utf-8")
+            except ValueError as loi:
+                self.gui(400, str(loi).encode("utf-8"), "text/plain; charset=utf-8")
+                return
             self.gui(200, than, "application/json; charset=utf-8")
             return
         if duong == "/cau-hinh":
@@ -545,6 +569,11 @@ class TraLoi(BaseHTTPRequestHandler):
         form = urllib.parse.parse_qs(than)
         bai = form.get("bai", [""])[0]
         ten_nguoi = form.get("ten_nguoi", [""])[0].strip()
+        dap_canh = {
+            "q1": form.get("q1", [""])[0].strip(),
+            "q2": form.get("q2", [""])[0].strip(),
+            "q3": form.get("q3", [""])[0].strip(),
+        }
         ma_tk, ma_phien, banh = self.nguoi_dang_nhap()
         if ma_tk is not None and not ten_nguoi:
             self.gui(400, "Hãy gõ tên người của lá số.".encode("utf-8"), "text/plain; charset=utf-8", cookie=banh)
@@ -558,7 +587,7 @@ class TraLoi(BaseHTTPRequestHandler):
             return
         ma_la = None
         try:
-            chart, tep_json, word, ten, noi_dung = phan_tich_bai(bai)
+            chart, tep_json, word, ten, noi_dung = phan_tich_bai(bai, dap_canh)
             ma_la = bat_dau(chart, tep_json.read_text(encoding="utf-8"), ten_nguoi, ma_tk, ma_phien)
             hoan_tat(ma_la, noi_dung, word)
             than = json.dumps(

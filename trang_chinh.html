@@ -77,7 +77,7 @@
   .tieu-bang { margin: 1rem 0 0.2rem; }
   #goi-ten { color: #6b645b; font-size: 0.95rem; }
   .ten-nguoi { font-size: 0.95rem; }
-  #lop {
+  #lop, #man-hoi {
     position: fixed;
     inset: 0;
     background: rgba(28, 25, 21, 0.45);
@@ -85,6 +85,29 @@
     place-items: center;
     padding: 1rem;
     z-index: 20;
+  }
+  #man-hoi[hidden] { display: none; }
+  .hop-hoi {
+    width: min(36rem, calc(100vw - 2rem));
+    max-height: min(90vh, 42rem);
+    overflow: auto;
+    box-sizing: border-box;
+    background: #fffdf8;
+    border-radius: 16px;
+    padding: 1.2rem 1.2rem 1.3rem;
+    box-shadow: 0 16px 40px rgba(40, 30, 10, 0.18);
+  }
+  .hop-hoi h2 { margin-top: 0; }
+  .hop-hoi .loi-hoi { color: #8a1f1f; min-height: 1.4rem; }
+  .mot-cau { margin: 0.8rem 0; }
+  .mot-cau p { margin: 0 0 0.35rem; font-weight: 650; }
+  .hop-hoi label.chon {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    margin: 0.35rem 0;
+    font-size: 1rem;
+    font-weight: 400;
   }
   .hop-vao {
     width: min(28rem, calc(100vw - 2rem));
@@ -188,6 +211,18 @@
     </div>
   </div>
 </header>
+<div id="man-hoi" hidden>
+  <div class="hop-hoi" role="dialog" aria-labelledby="tieu-hoi">
+    <h2 id="tieu-hoi">Hoàn cảnh đang sống</h2>
+    <p id="loi-dan-hoi"></p>
+    <div id="cac-cau"></div>
+    <p class="loi-hoi" id="loi-hoi"></p>
+    <div class="hang-nut">
+      <button type="button" class="gui" id="xong-hoi">Phân tích theo hoàn cảnh này</button>
+      <button type="button" class="nut-phu" id="huy-hoi">Để sau</button>
+    </div>
+  </div>
+</div>
 <div id="lop" hidden>
   <div class="hop-vao" role="dialog" aria-labelledby="tieu-vao">
     <h2 id="tieu-vao">Đăng nhập bằng Gmail</h2>
@@ -209,7 +244,7 @@
   <section id="laso">
     <p><strong>Hướng dẫn:</strong></p>
     <p>1. Dán toàn bộ dữ liệu lá số (bao gồm Thông tin, Tứ trụ và 12 cung) vào ô trống.</p>
-    <p>2. Bấm nút bắt đầu để hệ thống phân tích. Kết quả sẽ hiển thị ngay bên dưới.</p>
+    <p>2. Bấm nút bắt đầu. Trang hỏi vài câu về việc đang sống, rồi mới phân tích. Kết quả hiện ngay bên dưới.</p>
     <p>3. Sử dụng nút "Tải file Word" bên cạnh để lưu báo cáo.<br>Lưu ý: Quá trình xử lý có thể mất vài phút, vui lòng không đóng trình duyệt.</p>
     <p id="ds-tieu" hidden><strong>Lá số đã lưu</strong></p>
     <div id="ds-laso"></div>
@@ -377,10 +412,118 @@ form.bai.addEventListener("input", () => {
   hop.textContent = "";
 });
 
+function namSinh(bai) {
+  const mau = bai.match(/Ngày sinh:[^\n]*?(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  return mau ? Number(mau[3]) : null;
+}
+
+function cauDangHien(goi, chon) {
+  return goi.cau.filter((mot) => {
+    if (!mot.khi) return true;
+    return Object.keys(mot.khi).every((khoa) => (mot.khi[khoa] || []).indexOf(chon[khoa] || "") >= 0);
+  });
+}
+
+function hoiHoanCanh(goi) {
+  const man = document.getElementById("man-hoi");
+  const hopCau = document.getElementById("cac-cau");
+  const loiHoi = document.getElementById("loi-hoi");
+  const chon = {};
+  document.getElementById("loi-dan-hoi").textContent = "Đương số " + goi.tuoi + " tuổi. " + goi.loi;
+  function ve() {
+    const dang = cauDangHien(goi, chon);
+    hopCau.textContent = "";
+    dang.forEach((mot) => {
+      const khoi = document.createElement("div");
+      khoi.className = "mot-cau";
+      const tieu = document.createElement("p");
+      tieu.textContent = mot.hoi;
+      khoi.appendChild(tieu);
+      mot.dap.forEach((dap) => {
+        const nhan = document.createElement("label");
+        nhan.className = "chon";
+        const o = document.createElement("input");
+        o.type = "radio";
+        o.name = mot.ma;
+        o.value = dap.ma;
+        o.checked = chon[mot.ma] === dap.ma;
+        o.addEventListener("change", () => {
+          chon[mot.ma] = dap.ma;
+          goi.cau.forEach((khac) => {
+            if (khac.ma === mot.ma || !khac.khi) return;
+            const con = cauDangHien(goi, chon).some((item) => item.ma === khac.ma);
+            if (!con) delete chon[khac.ma];
+          });
+          loiHoi.textContent = "";
+          ve();
+        });
+        const chu = document.createElement("span");
+        chu.textContent = dap.chu;
+        nhan.append(o, chu);
+        khoi.appendChild(nhan);
+      });
+      hopCau.appendChild(khoi);
+    });
+  }
+  ve();
+  man.hidden = false;
+  return new Promise((xong) => {
+    const nutXong = document.getElementById("xong-hoi");
+    const nutHuy = document.getElementById("huy-hoi");
+    function don() {
+      nutXong.removeEventListener("click", bamXong);
+      nutHuy.removeEventListener("click", bamHuy);
+      man.hidden = true;
+    }
+    function bamXong() {
+      const dang = cauDangHien(goi, chon);
+      if (dang.some((mot) => !chon[mot.ma])) {
+        loiHoi.textContent = "Hãy chọn một đáp án cho mỗi câu đang hiện.";
+        return;
+      }
+      don();
+      xong({ q1: chon.q1 || "", q2: chon.q2 || "", q3: chon.q3 || "" });
+    }
+    function bamHuy() {
+      don();
+      xong(null);
+    }
+    nutXong.addEventListener("click", bamXong);
+    nutHuy.addEventListener("click", bamHuy);
+  });
+}
+
 form.addEventListener("submit", async (su_kien) => {
   su_kien.preventDefault();
-  nut.disabled = true;
   hop.className = "";
+  if (daDangNhap && !document.getElementById("ten-nguoi").value.trim()) {
+    hop.className = "loi";
+    hop.textContent = "Hãy gõ tên người của lá số.";
+    return;
+  }
+  const nam = namSinh(form.bai.value);
+  if (!nam) {
+    hop.className = "loi";
+    hop.textContent = "Chưa thấy ngày sinh trong bài dán. Dòng ngày sinh cần có dạng 1/1/2000.";
+    return;
+  }
+  let goiHoi;
+  try {
+    const traHoi = await fetch("/cau-hoi?nam_sinh=" + nam);
+    if (!traHoi.ok) {
+      hop.className = "loi";
+      hop.textContent = await traHoi.text();
+      return;
+    }
+    goiHoi = await traHoi.json();
+  } catch (e) {
+    hop.className = "loi";
+    hop.textContent = "Không nối được với chương trình. Hãy xem cửa sổ đang chạy web.py.";
+    return;
+  }
+  const dapCanh = await hoiHoanCanh(goiHoi);
+  if (!dapCanh) return;
+  nut.disabled = true;
   let conLai = null;
   const veDem = () => {
     hop.textContent = conLai == null ? "Đang phân tích..." : "Đang phân tích... còn " + conLai + " giây";
@@ -398,7 +541,13 @@ form.addEventListener("submit", async (su_kien) => {
     const tra_loi = await fetch("/phan-tich", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-      body: new URLSearchParams({ bai: form.bai.value, ten_nguoi: document.getElementById("ten-nguoi").value }),
+      body: new URLSearchParams({
+        bai: form.bai.value,
+        ten_nguoi: document.getElementById("ten-nguoi").value,
+        q1: dapCanh.q1,
+        q2: dapCanh.q2,
+        q3: dapCanh.q3,
+      }),
     });
     if (!tra_loi.ok) {
       hop.className = "loi";

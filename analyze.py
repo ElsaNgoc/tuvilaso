@@ -795,6 +795,48 @@ def gan_tuoi(he: str, tuoi: int) -> str:
     return he.rstrip() + "\n\n" + dieu_kien_tuoi(tuoi)
 
 
+HOAN_CANH = ""
+MA_HOAN_CANH = ""
+
+
+def lenh_boi_canh(so_chuong: int) -> str:
+    """Đoạn hoàn cảnh thật, gắn vào prompt. Chương 3 và 4 lấy hoàn cảnh này làm ràng buộc cao nhất."""
+    if not HOAN_CANH:
+        return ""
+    if so_chuong <= 2:
+        return (
+            "Dưới đây là hoàn cảnh sống hiện tại của đương số:\n"
+            f"{HOAN_CANH}\n"
+            "Dùng hoàn cảnh này làm chất liệu thực tế để minh họa tính cách và đại cục. "
+            "Biết đương số là cha hoặc mẹ đơn thân thì khi lá số có Cô Thần hoặc Quả Tú hãy viết sâu và đồng cảm, "
+            "không viết như người đang có bạn đời bên cạnh. "
+            "Nếu câu mẫu theo nhóm tuổi lệch với hoàn cảnh này, viết theo hoàn cảnh. "
+            "Không bịa sao không có trong nguyên liệu."
+        )
+    return (
+        f"Dưới đây là hoàn cảnh sống hiện tại: {HOAN_CANH} "
+        "Bạn đóng vai trò là người phiên dịch hoàn cảnh. "
+        "TUYỆT ĐỐI CẤM sử dụng các từ vựng lệch khỏi bối cảnh này "
+        "(Cấm nói về tình yêu với trẻ em, cấm khuyên khai trương với người làm thuê, cấm khuyên đi xa với người già yếu). "
+        "Mọi phân tích sao Lưu và 12 Trực phải được dịch sang hành động thực tế khớp 100% với hoàn cảnh sống. "
+        "Nếu điều kiện tuổi chung phía trên lệch với hoàn cảnh này, viết theo hoàn cảnh này."
+    )
+
+
+def noi_boi(cau: str, so_chuong: int) -> str:
+    lenh = lenh_boi_canh(so_chuong)
+    if not lenh:
+        return cau
+    return lenh + "\n\n" + cau
+
+
+def gan_boi(he: str, so_chuong: int) -> str:
+    lenh = lenh_boi_canh(so_chuong)
+    if not lenh:
+        return he
+    return he.rstrip() + "\n\n" + lenh
+
+
 def chi_thi_truc(tuoi: int) -> str:
     """Cách dịch 12 Trực sang việc đúng lứa tuổi, dùng riêng cho chương 4."""
     nhom = nhom_tuoi(tuoi)
@@ -1061,12 +1103,12 @@ def khoi_bon_chuong(chart: Chart, nhan: dict, muc: list[tuple[str, str]]) -> lis
         ),
     ]
     cac = [
-        Viec(tieu, prompt_chuong(tieu, cau, filtered, tran), goi=True, ca_phu=False, he_thong=he)
-        for tieu, cau, filtered, tran, he in yeu_cau
+        Viec(tieu, prompt_chuong(tieu, noi_boi(cau, so), filtered, tran), goi=True, ca_phu=False, he_thong=gan_boi(he, so))
+        for so, (tieu, cau, filtered, tran, he) in enumerate(yeu_cau, start=1)
     ]
     for mot in cac:
         if mot.tieu.startswith("Chương 3"):
-            mot.yeu_cau_sau = yeu_cau_thang
+            mot.yeu_cau_sau = noi_boi(yeu_cau_thang, 3)
             mot.nguyen_lieu_sau = nguyen_lieu_chuong_3(chart, nhan, muc)
     return cac
 
@@ -1312,6 +1354,8 @@ def ghi_bai(cac_phan: list[tuple[str, str]]) -> None:
             f"{CHART.gioi_tinh}, {CHART.am_duong}."
         )
         dong.append(CACH_VIET)
+        if MA_HOAN_CANH:
+            dong.append("Mã hoàn cảnh: " + MA_HOAN_CANH)
         dong.append("")
     for tieu_de, van in sap_chuong(cac_phan):
         dong.append(f"## {tieu_de}")
@@ -1326,7 +1370,9 @@ def dung_kieu_ke() -> bool:
     if not KET_QUA.is_file():
         return False
     dau = "\n".join(KET_QUA.read_text(encoding="utf-8").splitlines()[:8])
-    return CACH_VIET in dau
+    if MA_HOAN_CANH:
+        return CACH_VIET in dau and f"Mã hoàn cảnh: {MA_HOAN_CANH}" in dau
+    return CACH_VIET in dau and "Mã hoàn cảnh:" not in dau
 
 
 def doc_bai_cu() -> dict[str, str]:
@@ -1390,6 +1436,18 @@ def chay_han(chart: Chart, nhan: dict, muc: list[tuple[str, str]], chi_xem: bool
         time.sleep(4)
     print(f"Xong. Mở file: {KET_QUA}")
     xuat_report()
+
+
+def nap_hoan_canh(tep: Path) -> None:
+    """Đọc đoạn hoàn cảnh đã dịch sẵn. Trang web không gửi câu chữ tự do của người xem."""
+    global HOAN_CANH, MA_HOAN_CANH
+    if not tep.is_file():
+        raise SystemExit("Không thấy file hoàn cảnh.")
+    du = json.loads(tep.read_text(encoding="utf-8"))
+    HOAN_CANH = str(du.get("van", "")).strip()
+    MA_HOAN_CANH = str(du.get("ma", "")).strip()
+    if not HOAN_CANH:
+        raise SystemExit("File hoàn cảnh chưa có nội dung.")
 
 
 def chon_laso(laso: str | None) -> Chart:
@@ -1500,7 +1558,14 @@ def main() -> None:
         action="store_true",
         help="Viết lại bài đã có cho dễ đọc, không phân tích thêm.",
     )
+    parser.add_argument(
+        "--hoan-canh",
+        default="",
+        help="File JSON hoàn cảnh thật, do trang web tạo sau khi người xem trả lời.",
+    )
     args = parser.parse_args()
+    if args.hoan_canh:
+        nap_hoan_canh(Path(args.hoan_canh))
 
     load_dotenv(ROOT / ".env")
     if not SACH.is_file():
