@@ -1354,9 +1354,9 @@ def ghi_bai(cac_phan: list[tuple[str, str]]) -> None:
             f"{CHART.gioi_tinh}, {CHART.am_duong}."
         )
         dong.append(CACH_VIET)
-        if MA_HOAN_CANH:
-            dong.append("Mã hoàn cảnh: " + MA_HOAN_CANH)
         dong.append("")
+        if MA_HOAN_CANH:
+            (KET_QUA.parent / "ma_hoan_canh.txt").write_text(MA_HOAN_CANH, encoding="utf-8")
     for tieu_de, van in sap_chuong(cac_phan):
         dong.append(f"## {tieu_de}")
         dong.append("")
@@ -1370,9 +1370,14 @@ def dung_kieu_ke() -> bool:
     if not KET_QUA.is_file():
         return False
     dau = "\n".join(KET_QUA.read_text(encoding="utf-8").splitlines()[:8])
-    if MA_HOAN_CANH:
-        return CACH_VIET in dau and f"Mã hoàn cảnh: {MA_HOAN_CANH}" in dau
-    return CACH_VIET in dau and "Mã hoàn cảnh:" not in dau
+    if "Mã hoàn cảnh:" in dau:
+        return False
+    if not CACH_VIET in dau:
+        return False
+    if not MA_HOAN_CANH:
+        return True
+    tep_ma = KET_QUA.parent / "ma_hoan_canh.txt"
+    return tep_ma.is_file() and tep_ma.read_text(encoding="utf-8").strip() == MA_HOAN_CANH
 
 
 def doc_bai_cu() -> dict[str, str]:

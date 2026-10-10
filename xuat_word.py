@@ -151,7 +151,7 @@ def xuat(laso: str | None = None) -> None:
     i = 0
     while i < len(cac_dong):
         dong = cac_dong[i].strip()
-        if not dong or dong == "# Phân tích lá số" or dong.startswith("Cách viết:"):
+        if not dong or dong == "# Phân tích lá số" or dong.startswith("Cách viết:") or dong.startswith("Mã hoàn cảnh:"):
             i += 1
             continue
         if dong.startswith("|"):

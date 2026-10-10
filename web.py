@@ -237,7 +237,7 @@ def html_bai(van: str) -> str:
     i = 0
     while i < len(dong):
         chu = dong[i].strip()
-        if not chu or chu == "# Phân tích lá số" or chu.startswith("Cách viết:") or chu == "---":
+        if not chu or chu == "# Phân tích lá số" or chu.startswith("Cách viết:") or chu.startswith("Mã hoàn cảnh:") or chu == "---":
             i += 1
             continue
         if chu.startswith("|"):
