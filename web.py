@@ -85,7 +85,13 @@ def nam_sinh_da_dan() -> int | None:
     return int(nam)
 
 
-def goi_hom_nay(chi_thang: str, chi_ngay: str, nam: int | None = None, ten_nguoi: str = "") -> dict:
+def goi_hom_nay(
+    chi_thang: str,
+    chi_ngay: str,
+    nam: int | None = None,
+    ten_nguoi: str = "",
+    nam_xem: int | None = None,
+) -> dict:
     ten = truc_cua_ngay(chi_thang, chi_ngay)
     if nam is None:
         return {
@@ -97,7 +103,8 @@ def goi_hom_nay(chi_thang: str, chi_ngay: str, nam: int | None = None, ten_nguoi
             "nam_sinh": None,
             "ten_nguoi": "",
         }
-    ket = loi_theo_tuoi(ten, date.today().year - nam)
+    nam_tinh = nam_xem if nam_xem else date.today().year
+    ket = loi_theo_tuoi(ten, nam_tinh - nam)
     ket["nam_sinh"] = nam
     ket["ten_nguoi"] = ten_nguoi
     return ket
@@ -111,6 +118,7 @@ def liet_ke_truc() -> list[dict]:
             "cat_hung": bang[ten]["cat_hung"],
             "nen": bang[ten]["nen"],
             "kieng": bang[ten]["kieng"],
+            "y_nghia": bang[ten].get("y_nghia", ""),
         }
         for ten in TRUC
     ]
@@ -448,14 +456,20 @@ class TraLoi(BaseHTTPRequestHandler):
                 cap = nam_cua(int(ma_chu), ma_tk, ma_phien)
                 if cap:
                     nam, ten_nguoi = cap
-            if nam is None:
+            dung_ma = tham.get("dung_ma", ["0"])[0] == "1"
+            if nam is None and not dung_ma:
                 gan = la_so_gan(ma_tk, ma_phien)
                 if gan is not None:
                     cap = nam_cua(gan, ma_tk, ma_phien)
                     if cap:
                         nam, ten_nguoi = cap
+            nam_xem_chu = tham.get("nam_xem", [""])[0]
+            nam_xem = int(nam_xem_chu) if nam_xem_chu.isdigit() and 1900 <= int(nam_xem_chu) <= 2200 else None
             try:
-                than = json.dumps(goi_hom_nay(chi_thang, chi_ngay, nam, ten_nguoi), ensure_ascii=False).encode("utf-8")
+                than = json.dumps(
+                    goi_hom_nay(chi_thang, chi_ngay, nam, ten_nguoi, nam_xem),
+                    ensure_ascii=False,
+                ).encode("utf-8")
             except ValueError as loi:
                 self.gui(400, json.dumps({"loi": str(loi)}, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
                 return
