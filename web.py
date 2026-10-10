@@ -370,6 +370,8 @@ class TraLoi(BaseHTTPRequestHandler):
         self.send_response(ma)
         self.send_header("Content-Type", kieu)
         self.send_header("Content-Length", str(len(than)))
+        if kieu.startswith("text/html"):
+            self.send_header("Cache-Control", "no-store")
         if ten_tep:
             self.send_header("Content-Disposition", f'attachment; filename="{ten_tep}"')
         danh = [cookie] if isinstance(cookie, str) else list(cookie)
