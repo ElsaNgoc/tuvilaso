@@ -32,7 +32,6 @@ def bo_cau(tuoi: int) -> dict:
         raise ValueError("Tuổi không hợp lệ.")
     ten = nhom(tuoi)
     if ten == "tre":
-        loi = "Gọi là Đương số hoặc Bạn nhỏ. Không gọi là bé."
         cau = [
             _cau(
                 "q1",
@@ -63,7 +62,6 @@ def bo_cau(tuoi: int) -> dict:
             ),
         ]
     elif ten == "thanh_nien":
-        loi = "Độ tuổi này có người còn đi học, có người đã đi làm hoặc đang gap-year."
         cau = [
             _cau(
                 "q1",
@@ -87,7 +85,6 @@ def bo_cau(tuoi: int) -> dict:
             ),
         ]
     elif ten == "truong_thanh":
-        loi = "Chọn đúng việc đang làm, chuyện nhà, và điều bận tâm nhất trong năm."
         cau = [
             _cau(
                 "q1",
@@ -121,7 +118,6 @@ def bo_cau(tuoi: int) -> dict:
             ),
         ]
     else:
-        loi = "Hướng về sức khỏe, sự an bình và điều muốn để lại. Không khuyên bon chen."
         cau = [
             _cau(
                 "q1",
@@ -152,7 +148,7 @@ def bo_cau(tuoi: int) -> dict:
                 ],
             ),
         ]
-    return {"tuoi": tuoi, "nam_xem": NAM_XEM, "nhom": ten, "loi": loi, "cau": cau}
+    return {"tuoi": tuoi, "nam_xem": NAM_XEM, "nhom": ten, "cau": cau}
 
 
 def _chon(dap: dict, ma: str, hop: set[str]) -> str:
