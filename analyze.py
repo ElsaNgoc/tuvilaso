@@ -1089,7 +1089,7 @@ def khoi_bon_chuong(chart: Chart, nhan: dict, muc: list[tuple[str, str]]) -> lis
             "Chương 4: Cẩm nang hành động",
             "Dựa vào 12 Trực trong nguyên liệu, dịch nghĩa gốc sang việc đúng tuổi đương số, rồi lập bảng tra cứu.\n"
             "Bảng Markdown đúng 3 cột: Tên Trực | Cát/Hung | Việc nên làm và việc cấm kỵ.\n"
-            "Mỗi Trực một dòng. Lời khuyên cực ngắn, mộc mạc, khớp lứa tuổi. "
+            "Mỗi Trực đúng một dòng, không nhấn Enter giữa dòng. Lời khuyên cực ngắn, mộc mạc, khớp lứa tuổi. "
             "Cát/Hung giữ đúng file. Việc nên làm và việc cấm thì dịch theo chỉ thị tuổi, không chép nguyên chữ người lớn nếu đương số không thuộc nhóm trưởng thành.\n"
             "Trong ô việc, viết **Nên:** một câu, rồi đúng cụm <br>, rồi **Kỵ:** một câu.\n"
             "File không ghi ngày Tý, Sửu thuộc Trực nào. Không được gán.\n"

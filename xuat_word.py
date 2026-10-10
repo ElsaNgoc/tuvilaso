@@ -67,6 +67,23 @@ def o_bang(dong: str) -> list[str]:
     return [o.strip() for o in dong.strip("|").split("|")]
 
 
+def gop_mot_hang(dong: list[str], i: int) -> tuple[str, int]:
+    """Một hàng bảng đôi khi bị xuống dòng giữa ô. Gom đến khi gặp dấu | đóng hàng."""
+    gop = dong[i].strip()
+    i += 1
+    while not gop.endswith("|") and i < len(dong):
+        tiep = dong[i].strip()
+        if tiep.startswith("|") and tiep.endswith("|") and tiep.count("|") >= 3:
+            break
+        if tiep.startswith("## "):
+            break
+        i += 1
+        if not tiep:
+            continue
+        gop += "<br>" + tiep
+    return gop, i
+
+
 def ve_bang(tai_lieu, hang: list[list[str]]) -> None:
     if not hang:
         return
@@ -137,12 +154,12 @@ def xuat(laso: str | None = None) -> None:
         if not dong or dong == "# Phân tích lá số" or dong.startswith("Cách viết:"):
             i += 1
             continue
-        if la_dong_bang(dong):
+        if dong.startswith("|"):
             hang = []
-            while i < len(cac_dong) and la_dong_bang(cac_dong[i].strip()):
-                if not la_dong_ke(cac_dong[i].strip()):
-                    hang.append(o_bang(cac_dong[i].strip()))
-                i += 1
+            while i < len(cac_dong) and cac_dong[i].strip().startswith("|"):
+                gop, i = gop_mot_hang(cac_dong, i)
+                if not la_dong_ke(gop.replace("<br>", "")):
+                    hang.append(o_bang(gop))
             ve_bang(tai_lieu, hang)
             continue
         if dong.startswith("## "):
