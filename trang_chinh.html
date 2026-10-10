@@ -769,7 +769,12 @@ async function veChiTiet() {
       if (data.tuoi != null) {
         nen = data.nen;
         kieng = data.cam;
-        chuNguoi = "<p><strong>Việc của " + thoat(data.ten_nguoi || "người này") + ", " + data.tuoi + " tuổi.</strong> Trực và màu ô ngày vẫn dùng chung. Hai câu dưới đây đã đổi theo tuổi của lá số đang chọn.</p>";
+        const nguoi = dsLich.find((mot) => String(mot.ma) === String(laSo));
+        const ten = nguoi && nguoi.ten ? String(nguoi.ten).trim() : "";
+        const gio = nguoi && nguoi.gio_hanh_chinh ? "/" + nguoi.gio_hanh_chinh : "";
+        const sinh = nguoi ? nguoi.ngay_sinh + gio : "";
+        const cau = "Đối với lá số" + (ten ? " " + ten : "") + " sinh " + sinh + ".";
+        chuNguoi = "<p><strong>" + thoat(cau) + "</strong></p>";
       }
     } catch (e) { /* giữ lời chung nếu mạng chập chờn */ }
   }
