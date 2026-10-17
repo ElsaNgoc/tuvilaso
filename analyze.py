@@ -1146,7 +1146,7 @@ class ThuLai(Exception):
 
 
 CHO_LAI = (12, 25, 45, 70)
-MODEL_DU_PHONG = ("gemini-3.1-flash-lite", "gemini-3.5-flash-lite")
+MODEL_DU_PHONG = ("gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite")
 
 
 def goi_gemini_mot_lan(system: str, user: str, model: str, co_suy_nghi: bool) -> str:
@@ -1200,7 +1200,7 @@ def goi_gemini_mot_lan(system: str, user: str, model: str, co_suy_nghi: bool) ->
 
 
 def goi_gemini(system: str, user: str) -> str:
-    chinh = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
+    chinh = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
     danh_sach = [chinh]
     for phu in MODEL_DU_PHONG:
         if phu not in danh_sach:
