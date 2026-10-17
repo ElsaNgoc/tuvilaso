@@ -234,15 +234,18 @@
   #muc-luc {
     position: sticky;
     top: calc(var(--cao-dinh) + 10px);
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    max-height: calc(100vh - var(--cao-dinh) - 26px);
+    overflow-y: auto;
+    box-sizing: border-box;
     background: #fffdf8;
     border: 1px solid #c8bfb0;
     border-radius: 12px;
     padding: 0.6rem;
   }
   #muc-luc[hidden] { display: none; }
+  .hang-chuong, .hang-con { display: flex; flex-direction: column; gap: 0.2rem; }
+  .hang-con { margin: 0.15rem 0 0.35rem 0.75rem; padding-left: 0.5rem; border-left: 2px solid #e4dccf; }
+  .hang-con[hidden] { display: none; }
   #muc-luc a {
     display: block;
     padding: 0.55rem 0.75rem;
@@ -254,6 +257,8 @@
   }
   #muc-luc a:hover { background: #f3ead2; }
   #muc-luc a.dang { background: #1f4d3a; color: #fff; }
+  #muc-luc .hang-con a { padding: 0.32rem 0.6rem; font-size: 0.86rem; font-weight: 500; color: #4a443c; }
+  #muc-luc .hang-con a.dang { background: #e5f1ea; color: #1f4d3a; font-weight: 700; }
   .bao-cao #bai {
     margin-top: 0;
     position: relative;
@@ -271,17 +276,22 @@
     #muc-luc {
       top: var(--cao-dinh);
       z-index: 4;
-      flex-direction: row;
-      gap: 0.4rem;
-      overflow-x: auto;
-      scroll-snap-type: x proximity;
-      scrollbar-width: none;
+      max-height: none;
+      overflow: visible;
       background: #f4efe6;
       border: 0;
       border-radius: 0;
       padding: 0.4rem 0;
     }
-    #muc-luc::-webkit-scrollbar { display: none; }
+    .hang-chuong, .hang-con {
+      flex-direction: row;
+      gap: 0.4rem;
+      overflow-x: auto;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+    }
+    .hang-chuong::-webkit-scrollbar, .hang-con::-webkit-scrollbar { display: none; }
+    .hang-con { margin: 0.35rem 0 0; padding-left: 0; border-left: 0; }
     #muc-luc a {
       flex: 0 0 auto;
       scroll-snap-align: start;
@@ -291,6 +301,7 @@
       background: #fffdf8;
       padding: 0.45rem 0.85rem;
     }
+    #muc-luc .hang-con a { padding: 0.3rem 0.7rem; font-size: 0.82rem; border-color: #e4dccf; }
     .bao-cao #bai { max-height: none; overflow: visible; }
   }
   #bai p, #bai li { margin: 0.45rem 0; }
@@ -501,8 +512,13 @@ function hienBai(data) {
 
 const mucLuc = document.getElementById("muc-luc");
 const khungBao = document.querySelector(".bao-cao");
+const hangChuong = document.createElement("div");
+hangChuong.className = "hang-chuong";
+const hangCon = document.createElement("div");
+hangCon.className = "hang-con";
 let mocBai = [];
 let mocDang = null;
+let conDang = null;
 let henCanh = false;
 
 function doCaoDinh() {
@@ -515,10 +531,59 @@ function baiTuCuon() {
   return getComputedStyle(bai).overflowY === "auto" && bai.scrollHeight > bai.clientHeight + 1;
 }
 
+function laDienThoai() {
+  return matchMedia("(max-width: 760px)").matches;
+}
+
+function chuDauHoa(chu) {
+  const thuong = chu.trim().toLocaleLowerCase("vi");
+  return thuong.charAt(0).toLocaleUpperCase("vi") + thuong.slice(1);
+}
+
+function laDongDam(the) {
+  if (the.tagName !== "P" || !the.firstElementChild || the.firstElementChild.tagName !== "STRONG") return false;
+  return the.textContent.trim().replace(/:$/, "") === the.firstElementChild.textContent.trim().replace(/:$/, "");
+}
+
+function tenCon(so, the) {
+  const chu = the.textContent.trim();
+  if (so === 1) {
+    const bo = chu.replace(/^\d+\.\s*/, "").replace(/:$/, "").replace(/^(Phân tích|Tổng quan)\s+/i, "");
+    return bo.charAt(0).toLocaleUpperCase("vi") + bo.slice(1);
+  }
+  if (so === 2) {
+    const khop = chu.match(/Cung\s+(.+?)\s*\(\s*tại\s+([^)]+)\)/i);
+    if (khop) return chuDauHoa(khop[1]) + " · " + khop[2].trim();
+    return chu.replace(/^\d+\.\s*/, "").slice(0, 28);
+  }
+  const thang = chu.match(/^\**Tháng\s+(\d+)/i);
+  return thang ? "Tháng " + thang[1] : chu.slice(0, 20);
+}
+
+function laMucCon(so, the) {
+  if (so === 1 || so === 2) return laDongDam(the);
+  if (so === 4) return the.tagName === "P" && the.textContent.trim().length < 90 && /^\**Tháng\s+\d+/i.test(the.textContent.trim());
+  return false;
+}
+
+function taoLien(ten, dich, khiBam) {
+  const lien = document.createElement("a");
+  lien.href = "#" + dich.id;
+  lien.textContent = ten;
+  lien.addEventListener("click", (suKien) => {
+    suKien.preventDefault();
+    khiBam();
+  });
+  return lien;
+}
+
 function dungMucLuc() {
   mocBai = [];
   mocDang = null;
-  mucLuc.textContent = "";
+  conDang = null;
+  hangChuong.textContent = "";
+  hangCon.textContent = "";
+  mucLuc.replaceChildren(hangChuong);
   const theoSo = {};
   bai.querySelectorAll("h2").forEach((the) => {
     const khop = the.textContent.trim().match(/^Chương\s+(\d+)/i);
@@ -538,19 +603,23 @@ function dungMucLuc() {
     ["12 Tháng", thang],
     ["Cẩm nang hành động", theoSo["4"]],
   ];
-  danh.forEach(([ten, dich], so) => {
+  const dau = danh.map((mot) => mot[1]).filter(Boolean);
+  danh.forEach(([ten, dich], chiSo) => {
     if (!dich) return;
-    dich.id = "muc-" + (so + 1);
+    const so = chiSo + 1;
+    dich.id = "muc-" + so;
     if (dich.tagName !== "H2") dich.classList.add("moc-phu");
-    const lien = document.createElement("a");
-    lien.href = "#" + dich.id;
-    lien.textContent = ten;
-    lien.addEventListener("click", (suKien) => {
-      suKien.preventDefault();
-      denMuc(dich);
-    });
-    mucLuc.appendChild(lien);
-    mocBai.push({ dich: dich, lien: lien });
+    const chuong = { dich: dich, con: [] };
+    chuong.lien = taoLien(ten, dich, () => denMuc(dich, chuong));
+    for (let the = dich.nextElementSibling; the && dau.indexOf(the) < 0 && the.tagName !== "H2"; the = the.nextElementSibling) {
+      if (!laMucCon(so, the)) continue;
+      the.id = "muc-" + so + "-" + (chuong.con.length + 1);
+      const con = { dich: the };
+      con.lien = taoLien(tenCon(so, the), the, () => denMuc(the, chuong));
+      chuong.con.push(con);
+    }
+    hangChuong.appendChild(chuong.lien);
+    mocBai.push(chuong);
   });
   mucLuc.hidden = mocBai.length === 0;
   khungBao.classList.toggle("mot-cot", mocBai.length === 0);
@@ -559,7 +628,41 @@ function dungMucLuc() {
   canhMuc();
 }
 
-function denMuc(dich) {
+function moChuong(chuong) {
+  if (chuong === mocDang) return;
+  mocDang = chuong;
+  conDang = null;
+  mocBai.forEach((mot) => {
+    mot.lien.classList.toggle("dang", mot === chuong);
+    if (mot === chuong) mot.lien.setAttribute("aria-current", "true");
+    else mot.lien.removeAttribute("aria-current");
+  });
+  hangCon.replaceChildren(...chuong.con.map((con) => con.lien));
+  chuong.con.forEach((con) => {
+    con.lien.classList.remove("dang");
+    con.lien.removeAttribute("aria-current");
+  });
+  hangCon.hidden = chuong.con.length === 0;
+  if (laDienThoai()) mucLuc.appendChild(hangCon);
+  else chuong.lien.after(hangCon);
+  hienTrongMuc(chuong.lien, hangChuong);
+}
+
+function hienTrongMuc(lien, hang) {
+  const o = lien.getBoundingClientRect();
+  if (laDienThoai()) {
+    const khung = hang.getBoundingClientRect();
+    hang.scrollLeft += o.left - khung.left - (hang.clientWidth - o.width) / 2;
+    return;
+  }
+  const khung = mucLuc.getBoundingClientRect();
+  if (o.top < khung.top || o.bottom > khung.bottom) {
+    mucLuc.scrollTop += o.top - khung.top - (mucLuc.clientHeight - o.height) / 2;
+  }
+}
+
+function denMuc(dich, chuong) {
+  moChuong(chuong);
   const cao = doCaoDinh();
   if (baiTuCuon()) {
     const tren = khungBao.getBoundingClientRect().top;
@@ -585,17 +688,20 @@ function canhMuc() {
     ? bai.scrollTop + bai.clientHeight >= bai.scrollHeight - 4
     : window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
   if (cuoiBai) chon = mocBai[mocBai.length - 1];
-  if (chon === mocDang) return;
-  mocDang = chon;
-  mocBai.forEach((mot) => {
-    mot.lien.classList.toggle("dang", mot === chon);
-    if (mot === chon) mot.lien.setAttribute("aria-current", "true");
+  moChuong(chon);
+  let con = null;
+  chon.con.forEach((mot) => {
+    if (mot.dich.getBoundingClientRect().top <= moc) con = mot;
+  });
+  if (cuoiBai && chon.con.length) con = chon.con[chon.con.length - 1];
+  if (con === conDang) return;
+  conDang = con;
+  chon.con.forEach((mot) => {
+    mot.lien.classList.toggle("dang", mot === con);
+    if (mot === con) mot.lien.setAttribute("aria-current", "true");
     else mot.lien.removeAttribute("aria-current");
   });
-  if (getComputedStyle(mucLuc).flexDirection === "row") {
-    const lien = chon.lien;
-    mucLuc.scrollLeft = lien.offsetLeft - (mucLuc.clientWidth - lien.offsetWidth) / 2;
-  }
+  if (con) hienTrongMuc(con.lien, hangCon);
 }
 
 function henCanhMuc() {
@@ -612,6 +718,7 @@ window.addEventListener("scroll", henCanhMuc, { passive: true });
 window.addEventListener("resize", () => {
   doCaoDinh();
   mocDang = null;
+  conDang = null;
   henCanhMuc();
 });
 
