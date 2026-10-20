@@ -1,9 +1,9 @@
 """
-Tạo các bảng.
+Create the tables.
 
-Máy nhà dùng file du_lieu/tuvilaso.db.
-Khi có TURSO_DATABASE_URL và TURSO_AUTH_TOKEN, các bảng nằm ở Turso.
-Render chỉ chạy trang, không giữ data.
+The local machine uses the file du_lieu/tuvilaso.db.
+When TURSO_DATABASE_URL and TURSO_AUTH_TOKEN are set, the tables live on Turso.
+Render only serves the site and keeps no data.
 
     .\\venv\\Scripts\\python.exe db.py
 """
@@ -82,7 +82,7 @@ CREATE INDEX IF NOT EXISTS hoi_theo_la_so ON hoi_dap(ma_la_so);
 
 
 class Dong(dict):
-    """Một dòng, lấy theo tên cột hoặc theo số thứ tự."""
+    """One row, accessible by column name or by index."""
 
     def __getitem__(self, khoa):
         if isinstance(khoa, int):

@@ -1,4 +1,4 @@
-"""Dịch đáp án khảo sát thành hoàn cảnh thật, để bài viết bám đúng việc đương số đang sống."""
+"""Turn survey answers into real-life circumstances, so the reading matches what the chart owner is actually living through."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ def _cau(ma: str, hoi: str, dap: list[dict], khi: dict | None = None) -> dict:
 
 
 def bo_cau(tuoi: int) -> dict:
-    """Đúng bộ câu của một nhóm tuổi. Câu có 'khi' chỉ hiện khi đáp án trước khớp."""
+    """The question set for one age group. A question with 'khi' only shows when the earlier answer matches."""
     if tuoi < 0 or tuoi > 120:
         raise ValueError("Tuổi không hợp lệ.")
     ten = nhom(tuoi)
@@ -165,7 +165,7 @@ def _bo(dap: dict, *ma) -> None:
 
 
 def user_real_context(tuoi: int, dap: dict) -> tuple[str, str]:
-    """Trả về mã ngắn và đoạn văn hoàn cảnh. Mã dùng để biết đáp án có đổi hay không."""
+    """Return a short code and the circumstances paragraph. The code tells whether the answers have changed."""
     if tuoi < 0 or tuoi > 120:
         raise ValueError("Tuổi không hợp lệ.")
     ten = nhom(tuoi)

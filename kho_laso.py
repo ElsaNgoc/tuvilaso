@@ -1,4 +1,4 @@
-"""Lưu lá số, bài phân tích và câu hỏi vào database."""
+"""Save lá số (birth charts), analyses and questions to the database."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parent
 
 
 def don_khach_cu() -> None:
-    """Xóa lá số khách để quá 12 giờ, trừ bài đang viết."""
+    """Delete guest charts older than 12 hours, except those still being written."""
     with mo() as ket:
         ket.execute(
             """
@@ -174,7 +174,7 @@ def danh_sach(ma_tai_khoan: int | None, ma_phien: str) -> list[dict]:
 
 
 def xoa_la_so(ma: int, ma_tai_khoan: int | None, ma_phien: str) -> bool | str:
-    """Xóa một lá số của đúng người. Đang viết thì chưa xóa."""
+    """Delete one chart belonging to the right user. Skip it while it is still being written."""
     if lay_la_so(ma, ma_tai_khoan, ma_phien) is None:
         return False
     with mo() as ket:
@@ -226,7 +226,7 @@ def bai_moi(ma: int, ma_tai_khoan: int | None, ma_phien: str) -> dict | None:
 
 
 def byte_word(ma: int, ma_tai_khoan: int | None, ma_phien: str) -> bytes | None:
-    """File Word nằm trong database. Máy nhà còn đọc file cũ nếu dòng chưa có bản nhúng."""
+    """The Word file lives in the database. The local machine still reads the old file if the row has no embedded copy."""
     if lay_la_so(ma, ma_tai_khoan, ma_phien) is None:
         return None
     with mo() as ket:

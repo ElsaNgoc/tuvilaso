@@ -1,7 +1,7 @@
 """
-Khuôn dữ liệu của một lá số.
+Data model for a lá số (birth chart).
 
-Chạy để kiểm tra file mẫu:
+Run to check the sample file:
     .\\venv\\Scripts\\python.exe models.py
 """
 
@@ -23,7 +23,7 @@ class Star(BaseModel):
 
 
 class House(BaseModel):
-    """Một cung trên lá số."""
+    """One cung (palace) on the chart."""
 
     ten: str
     vi_tri: str
@@ -95,7 +95,7 @@ class NienHoa(BaseModel):
 
 
 class Chart(BaseModel):
-    """Cả lá số. Phần tử vi dùng cho sách Tân Biên. Phần tứ trụ giữ để sau."""
+    """The whole chart. The Tử Vi part is used with Tân Biên (the reference book). The tứ trụ (Four Pillars) part is kept for later."""
 
     gioi_tinh: str
     ngay_sinh: str
@@ -121,7 +121,7 @@ class Chart(BaseModel):
 
 
 def thu_muc_bao_cao(chart: Chart) -> Path:
-    """Một thư mục cho một lá số, đặt theo ngày và giờ sinh dương lịch."""
+    """One folder per chart, named by the solar-calendar birth date and hour."""
     ngay = chart.ngay_sinh.strip().split("/")
     if len(ngay) != 3:
         raise ValueError(f"Ngày sinh không đúng dạng ngày/tháng/năm: {chart.ngay_sinh}")

@@ -1,12 +1,12 @@
 """
-Bóc tách PDF "Tử Vi Đẩu Số Tân Biên".
+Extract text and tables from the PDF "Tử Vi Đẩu Số Tân Biên" (the reference book).
 
-Để file PDF trong thư mục tai_lieu.
+Put the PDF file in the tai_lieu folder.
 
-Chạy cả cuốn:
+Run the whole book:
     .\\venv\\Scripts\\python.exe pdf_parser.py
 
-Chạy thử 10 trang:
+Trial run on 10 pages:
     .\\venv\\Scripts\\python.exe pdf_parser.py --pages 10
 """
 
@@ -44,18 +44,18 @@ VOWEL = (
 
 
 def repair_spacing(text: str) -> str:
-    """Sửa khoảng trắng do PDF canh đều hai bên bị chèn vào giữa một chữ."""
+    """Fix spaces inserted mid-word by the PDF's justified text alignment."""
     onset = (
         r"(?:[Gg]i|[Nn]h|[Tt]h|[Pp]h|[Cc]h|[Gg]h|[Kk]h|[Nn]g|[Tt]r|[Qq]u|"
         r"[BbCcDdĐđGgHhKkLlMmNnPpQqRrSsTtVvXx])"
     )
-    # "Thi ếu", "Tu ế", "Quy ền": phụ âm đầu + một nguyên âm, rồi dấu cách, rồi nguyên âm có dấu.
+    # "Thi ếu", "Tu ế", "Quy ền": initial consonant + one vowel, then a space, then an accented vowel.
     text = re.sub(
         rf"(?<![A-Za-zÀ-ỹ])({onset}[iueoaIUEOAyY])\s+(?=[{VOWEL}])",
         r"\1",
         text,
     )
-    # "H ỷ", "T ử", "B ạch": phụ âm đầu bị tách khỏi nguyên âm.
+    # "H ỷ", "T ử", "B ạch": initial consonant split off from its vowel.
     text = re.sub(
         rf"(?<![A-Za-zÀ-ỹ])({onset})\s+(?=[{VOWEL}])",
         r"\1",
@@ -64,16 +64,16 @@ def repair_spacing(text: str) -> str:
     text = re.sub(rf"([Đđ])\s+(?=[ưứừựửữêềếệểễ])", r"\1", text)
     text = re.sub(r"([ẤấẦầ])\s+t\b", r"\1t", text)
     text = re.sub(r"([,;:])(?=\S)", r"\1 ", text)
-    # Chỉ chữ thường. Không dùng khoảng à-ỹ vì chữ HOA tiếng Việt nằm lẫn trong khoảng đó.
+    # Lowercase only. Don't use the range à-ỹ because Vietnamese UPPERCASE letters are interleaved in it.
     lower = "a-zàáảãạăằắặẳẵâầấậẩẫèéẻẽẹêềếệểễìíỉĩịòóỏõọôồốộổỗơờớợởỡùúủũụưừứựửữỳýỷỹỵ"
     text = re.sub(rf"([{lower}])(?=[A-ZĐ])", r"\1 ", text)
-    # Chữ "đ" luôn đứng đầu âm tiết, nên dính vào chữ trước là thiếu dấu cách.
+    # "đ" always starts a syllable, so if it's glued to the preceding letter a space is missing.
     text = re.sub(rf"([{lower}])(?=đ)", r"\1 ", text)
     return text
 
 
 def overlapped_space_ids(chars: list[dict]) -> set[int]:
-    """Bỏ dấu cách nằm đè lên chữ thật (PDF chèn space vào giữa 'Ất')."""
+    """Drop spaces that overlap real characters (the PDF inserts a space inside 'Ất')."""
     nonempty = [char for char in chars if char.get("text", " ").strip()]
     bad: set[int] = set()
     for space in chars:
@@ -124,7 +124,7 @@ def clean_cell(value) -> str:
 
 
 def merge_complementary_columns(rows: list[list[str]]) -> list[list[str]]:
-    """Gộp cột trống do ô bị kẻ gộp: tiêu đề và nội dung nằm hai cột kề nhau."""
+    """Merge empty columns caused by merged cells: header and content sit in two adjacent columns."""
     width = max(len(row) for row in rows)
     rows = [row + [""] * (width - len(row)) for row in rows]
     columns = [[row[index] for row in rows] for index in range(width)]
@@ -167,7 +167,7 @@ def clean_table(raw_rows: list[list]) -> list[list[str]]:
     trimmed = [row for row in trimmed if any(cell for cell in row)]
     if not trimmed:
         return []
-    # Lá số 4x4 phải giữ nguyên ô giữa. Gộp cột chỉ dùng cho bảng số liệu.
+    # A 4x4 lá số (birth chart) must keep its center cell intact. Column merging is only for data tables.
     if not is_laso(trimmed):
         trimmed = merge_complementary_columns(trimmed)
     content_cells = sum(1 for row in trimmed for cell in row if cell)
@@ -207,7 +207,7 @@ def pad_grid(rows: list[list[str]]) -> list[list[str]]:
 
 
 def is_laso(rows: list[list[str]]) -> bool:
-    """Lá số là lưới 4x4: 12 cung vòng ngoài, ô 2x2 ở giữa là Thiên bàn."""
+    """A lá số (birth chart) is a 4x4 grid: 12 cung (palaces) around the edge, the 2x2 center is the Thiên bàn."""
     grid = pad_grid(rows)
     if len(grid) != 4 or any(len(row) != 4 for row in grid):
         return False
@@ -299,7 +299,7 @@ def laso_payload(rows: list[list[str]]) -> dict:
     center_lines = []
     for cell in (grid[1][1], grid[1][2], grid[2][1], grid[2][2]):
         center_lines.extend(line.strip() for line in cell.split("\n") if line.strip())
-    # Chiều thuận kim đồng hồ, bắt đầu từ ô thường là cung Tý.
+    # Clockwise, starting from the cell that is usually the Tý palace.
     thu_tu = [(3, 2), (3, 1), (3, 0), (2, 0), (1, 0), (0, 0), (0, 1), (0, 2), (0, 3), (1, 3), (2, 3), (3, 3)]
     cung = []
     for index, (row, col) in enumerate(thu_tu, start=1):
@@ -313,7 +313,7 @@ def laso_payload(rows: list[list[str]]) -> dict:
     }
 
 
-# Tên cung in trong sách -> tên cột cho thống nhất.
+# Palace names as printed in the book -> normalized column names.
 PALACE_NAMES = (
     ("MỆNH VIÊN", "MỆNH"),
     ("PHỤ MẪU", "PHỤ MẪU"),
@@ -382,7 +382,7 @@ def _normalize_star_text(text: str) -> str:
 
 
 PHU_TINH_SORTED = tuple(sorted(set(PHU_TINH), key=len, reverse=True))
-# Chiều thuận, bắt đầu từ Tý. (hàng, cột) theo lưới 4x4, hàng 1 là mép trên.
+# Forward direction, starting from Tý. (row, col) in the 4x4 grid; row 1 is the top edge.
 VONG_THUAN = (
     (4, 3, "Tý"), (4, 2, "Sửu"), (4, 1, "Dần"), (3, 1, "Mão"),
     (2, 1, "Thìn"), (1, 1, "Tỵ"), (1, 2, "Ngọ"), (1, 3, "Mùi"),
@@ -524,7 +524,7 @@ def _center_info(center_lines: list[str]) -> dict:
 
 
 def is_detailed_laso(rows: list[list[str]]) -> bool:
-    """Lá số có tên 12 cung và sao, khác với sơ đồ an sao chỉ ghi số hoặc địa chi."""
+    """A lá số with the 12 palace names and stars, unlike star-placement diagrams that only show numbers or earthly branches."""
     hits = 0
     for row_index, col_index, _chi in VONG_THUAN:
         cell = pad_grid(rows)[row_index - 1][col_index - 1]

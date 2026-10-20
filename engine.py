@@ -1,7 +1,7 @@
 """
-Gắn nhãn lá số trước khi gọi AI.
+Label the lá số (birth chart) before calling the AI.
 
-Chạy:
+Run:
     .\\venv\\Scripts\\python.exe engine.py
 """
 

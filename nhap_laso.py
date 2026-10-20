@@ -1,11 +1,11 @@
 """
-Đổi bài lá số người dùng dán thành file JSON.
+Convert a lá số (birth chart) text pasted by the user into a JSON file.
 
-Cách dùng:
+Usage:
     .\\venv\\Scripts\\python.exe nhap_laso.py laso\\bai.txt
 
-File JSON ra cùng tên, ví dụ laso\\bai.json.
-Sau đó phân tích:
+The output JSON has the same name, e.g. laso\\bai.json.
+Then analyze it:
     .\\venv\\Scripts\\python.exe analyze.py --laso laso\\bai.json --day-du
 """
 
@@ -53,7 +53,7 @@ def sach(van: str) -> str:
 
 
 def tu(van: str) -> str:
-    """KỶ MÃO -> Kỷ Mão. Chữ thường giữ nguyên."""
+    """KỶ MÃO -> Kỷ Mão. Lowercase text is left unchanged."""
     van = sach(van)
     khoi = []
     for tieng in van.split():

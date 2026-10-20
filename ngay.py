@@ -1,8 +1,8 @@
 """
-Trực của một ngày và lời khuyên theo tuổi.
+The Trực (day officer) of a date and advice by age group.
 
-Trực Kiến rơi vào ngày có địa chi trùng địa chi của tháng.
-Các ngày sau đếm thuận: Kiến, Trừ, Mãn, Bình, Định, Chấp, Phá, Nguy, Thành, Thu, Khai, Bế.
+Trực Kiến falls on the day whose Earthly Branch matches the month's branch.
+Following days count forward: Kiến, Trừ, Mãn, Bình, Định, Chấp, Phá, Nguy, Thành, Thu, Khai, Bế.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from han import CHI
 ROOT = Path(__file__).resolve().parent
 TRUC = ["Kiến", "Trừ", "Mãn", "Bình", "Định", "Chấp", "Phá", "Nguy", "Thành", "Thu", "Khai", "Bế"]
 
-# Hai câu đã dịch từ knowledge_trachcat.json theo bốn nhóm tuổi.
+# Two sentences rewritten from knowledge_trachcat.json for each of the four age groups.
 LOI = {
     "Kiến": {
         "tre": ("Nhận một việc nhỏ người lớn giao, rồi làm cho xong.", "Không bắt đầu môn học mới. Hạn chế chỗ đông, chú ý đi đứng kẻo ngã."),
@@ -103,7 +103,7 @@ def nhom_tuoi(tuoi: int) -> str:
 
 
 def truc_cua_ngay(chi_thang: str, chi_ngay: str) -> str:
-    """Ngày trùng chi với tháng là Trực Kiến. Ngày sau đếm thuận trên vòng 12 chi."""
+    """The day sharing the month's branch is Trực Kiến. Later days count forward around the 12 branches."""
     if chi_thang not in CHI or chi_ngay not in CHI:
         raise ValueError(f"Địa chi không hợp: tháng {chi_thang}, ngày {chi_ngay}")
     lech = (CHI.index(chi_ngay) - CHI.index(chi_thang)) % 12

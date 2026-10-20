@@ -1,23 +1,23 @@
 """
-Bước 4: gọi AI viết phân tích, chỉ dựa trên sách đã tách.
+Step 4: call the AI to write the analysis, based only on the extracted book.
 
-Xem AI sẽ được đưa đoạn sách nào (chưa tốn tiền):
+Preview which book passages the AI will receive (costs nothing):
     .\\venv\\Scripts\\python.exe analyze.py --xem
 
-Chạy thử một đoạn (tổng quan Mệnh - Thân):
+Trial run of one section (Mệnh - Thân overview):
     .\\venv\\Scripts\\python.exe analyze.py
 
-Chạy đủ 4 chương, mỗi chương một lần gọi, rồi gộp thành một file Word:
+Run all 4 chapters, one call per chapter, then merge into one Word file:
     .\\venv\\Scripts\\python.exe analyze.py --laso laso\\ten_file.json --day-du
 
-Bài ghi vào output\\năm-tháng-ngày_giờsinh\\
-Trong đó có phan_tich.md và TuVi_Report.docx. Chạy lại cùng lá số thì ghi đè thư mục đó.
+Output goes to output\\<year-month-day_birth-hour>\\
+It contains phan_tich.md and TuVi_Report.docx. Re-running the same lá số (birth chart) overwrites that folder.
 
-Viết lại bài đã có cho dễ đọc, không phân tích thêm:
+Rewrite an existing report for readability, without further analysis:
     .\\venv\\Scripts\\python.exe analyze.py --viet-lai
 
-Nếu Gemini báo quá tải, lệnh tự đợi rồi thử lại. Chạy lại cùng lệnh sẽ viết tiếp
-phần còn thiếu trong thư mục của lá số đó.
+If Gemini reports overload, the command waits and retries. Re-running the same command
+continues writing the missing parts in that chart's folder.
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ KET_QUA = ROOT / "output" / "phan_tich.md"
 LASO_PATH: Path | None = None
 CHART: Chart | None = None
 
-# Bảng trang 20: tam hợp, nhị hợp, xung. Vị trí không đổi theo cung.
+# Table on page 20: tam hợp, nhị hợp, xung (palace relations). Positions are fixed regardless of cung.
 TAM_HOP = (
     ("Thân", "Tý", "Thìn"),
     ("Dần", "Ngọ", "Tuất"),
@@ -122,7 +122,7 @@ def doc_sach() -> list[tuple[str, str]]:
 
 
 def tim_muc(muc: list[tuple[str, str]], cum: str, gioi_han: int = 1400) -> str:
-    """Lấy đúng mục sách có tên sao hoặc số mục, cắt ngắn để khỏi gửi cả cuốn."""
+    """Fetch the book section matching a star name or section number, truncated so we don't send the whole book."""
     khoa = cum.casefold().replace("ị", "ỵ").replace("kị", "kỵ")
     khop: list[tuple[str, str]] = []
     for tieu_de, than in muc:
@@ -136,7 +136,7 @@ def tim_muc(muc: list[tuple[str, str]], cum: str, gioi_han: int = 1400) -> str:
         khop.append((tieu_de, than))
     if not khop:
         return ""
-    # Mục 3.x là đặc tính sao. Mục 8 là cách an sao, không dùng để luận.
+    # Sections 3.x are star characteristics. Section 8 is star placement, not used for interpretation.
     dac_tinh = [item for item in khop if re.match(r"3\.\d+\.\s", item[0])]
     if dac_tinh:
         chon = dac_tinh[0]
@@ -153,7 +153,7 @@ def tim_muc(muc: list[tuple[str, str]], cum: str, gioi_han: int = 1400) -> str:
 
 
 def kiem_bang_lien_he() -> None:
-    """Bảng tam hợp, xung, nhị hợp phải phủ đủ 12 chi và đi hai chiều."""
+    """The tam hợp, xung, nhị hợp tables must cover all 12 chi (earthly branches) and be symmetric."""
     chi = {ten for bo in TAM_HOP for ten in bo}
     if chi != set(CHI) or set(XUNG) != set(CHI) or set(NHI_HOP) != set(CHI):
         raise SystemExit("Bảng liên hệ cung bị thiếu chi.")
@@ -189,7 +189,7 @@ def tom_tat(house: House) -> str:
 
 
 def uoc_token(van: str) -> int:
-    """Ước lượng token theo số tiếng. Tiếng Việt tách bằng dấu cách."""
+    """Estimate tokens by syllable count. Vietnamese syllables are space-separated."""
     return len(van.split())
 
 
@@ -201,7 +201,7 @@ def cat_token(van: str, tran: int) -> str:
 
 
 def ghep_ngan(cac_doan: list[str], tran: int = TRAN_TOKEN) -> str:
-    """Ghép các đoạn theo thứ tự ưu tiên, dừng trước mốc 1000 token."""
+    """Join passages in priority order, stopping before the 1000-token mark."""
     chon: list[str] = []
     for doan in cac_doan:
         doan = doan.strip()
@@ -235,7 +235,7 @@ def context_builder(
     nhan_cung: list[str],
     tran: int = TRAN_TOKEN,
 ) -> str:
-    """Tính tam hợp, xung, nhị hợp rồi chỉ lấy lý thuyết sao liên quan."""
+    """Compute tam hợp, xung, nhị hợp, then pull only the relevant star theory."""
     bo = next(nhom for nhom in TAM_HOP if house.vi_tri in nhom)
     ban = [cung_o(chart, chi) for chi in bo if chi != house.vi_tri]
     xung = cung_o(chart, XUNG[house.vi_tri])
@@ -324,7 +324,7 @@ def lien_he_cung(chart: Chart, house: House) -> str:
 
 
 def trich_sao(muc: list[tuple[str, str]], ten_sao: list[str], gioi_han_chu: int) -> tuple[str, list[str]]:
-    """Lấy mục sách của từng sao. Sao không có tiêu đề riêng được liệt kê để khỏi bịa."""
+    """Fetch the book section for each star. Stars without their own heading are listed so the AI doesn't invent them."""
     khoi: list[str] = []
     thieu: list[str] = []
     da_gui: set[str] = set()
@@ -521,12 +521,12 @@ def thang_gio_sinh(chart: Chart) -> tuple[int, str]:
 
 
 def luu_nguyet(chi_tieu: str, thang_sinh: int, gio_sinh: str) -> list[str]:
-    """Cách 1, mục 10.4 Tân Biên.
+    """Method 1, section 10.4 of Tân Biên (the reference book).
 
-    Cung tiểu hạn năm nay kể là tháng Giêng của bước đếm.
-    Đếm nghịch, tức ngược chiều kim đồng hồ trên lá số, tới tháng sinh.
-    Cung dừng lại kể là giờ Tý. Từ đó đếm thuận, cùng chiều kim đồng hồ, tới giờ sinh.
-    Cung dừng lại là tháng Giêng. Tháng sau đi thuận, mỗi cung một tháng.
+    This year's tiểu hạn (minor period) cung counts as the first lunar month (tháng Giêng) of the count.
+    Count backward, i.e. counterclockwise on the lá số, up to the birth month.
+    The cung where it stops counts as the hour Tý. From there count forward, clockwise, up to the birth hour.
+    The cung where it stops is tháng Giêng. Later months go forward, one cung per month.
     """
     gio_ty = buoc(chi_tieu, thang_sinh - 1, False)
     thang_gieng = buoc(gio_ty, CHI.index(gio_sinh), True)
@@ -657,7 +657,7 @@ def muc_hoa_ky(data: dict, can: str, sao_ky: str) -> dict | None:
 
 
 def dong_hoa_ky(can: str, sao_ky: str) -> str:
-    """Chỉ gửi Hóa Kỵ của can năm đang xem, không gửi cả tám sao trong file."""
+    """Send only the Hóa Kỵ for the current year's can (heavenly stem), not all eight stars in the file."""
     for ten in ("knowledge_bacphai.json", "knowledge_hoaky_trungchau.json"):
         data = doc_tri_thuc(ten)
         if not data:
@@ -737,7 +737,7 @@ NAM_XEM = 2026
 
 
 def tuoi_duong(chart: Chart, nam_xem: int = NAM_XEM) -> int:
-    """Tuổi dương lịch: năm xem trừ năm sinh."""
+    """Solar-calendar age: viewing year minus birth year."""
     _, _, nam_goc = nam_sinh(chart)
     return nam_xem - nam_goc
 
@@ -762,7 +762,7 @@ def viec_cung(ten: str, tuoi: int) -> str:
 
 
 def dieu_kien_tuoi(tuoi: int) -> str:
-    """Câu ràng buộc chủ đề, gắn vào prompt của cả 4 chương."""
+    """Topic-constraint sentence, appended to the prompts of all 4 chapters."""
     nhom = nhom_tuoi(tuoi)
     if nhom == "tre":
         viec = (
@@ -800,7 +800,7 @@ MA_HOAN_CANH = ""
 
 
 def lenh_boi_canh(so_chuong: int) -> str:
-    """Đoạn hoàn cảnh thật, gắn vào prompt. Chương 3 và 4 lấy hoàn cảnh này làm ràng buộc cao nhất."""
+    """Real-life circumstances passage, appended to the prompt. Chapters 3 and 4 treat it as the top-priority constraint."""
     if not HOAN_CANH:
         return ""
     if so_chuong <= 2:
@@ -838,7 +838,7 @@ def gan_boi(he: str, so_chuong: int) -> str:
 
 
 def chi_thi_truc(tuoi: int) -> str:
-    """Cách dịch 12 Trực sang việc đúng lứa tuổi, dùng riêng cho chương 4."""
+    """How to translate the 12 Trực into age-appropriate activities, used only for chapter 4."""
     nhom = nhom_tuoi(tuoi)
     if nhom == "tre":
         dang_dung = (
@@ -939,7 +939,7 @@ HE_THANG = """Bạn là chuyên gia tư vấn Tử Vi thực tế. Viết vận 
 
 
 def _nam_dang_xem(chart: Chart) -> tuple[dict, int, str]:
-    """Tuổi mụ chỉ để tìm cung hạn. Tuổi dương lịch để lọc chủ đề."""
+    """Tuổi mụ (traditional age) is only for finding the period cung. Solar-calendar age is for topic filtering."""
     _, _, nam_goc = nam_sinh(chart)
     tuoi = NAM_XEM - nam_goc
     nam = mot_nam(chart, NAM_XEM - nam_goc + 1, NAM_XEM)
@@ -947,7 +947,7 @@ def _nam_dang_xem(chart: Chart) -> tuple[dict, int, str]:
 
 
 def nguyen_lieu_nam(chart: Chart) -> str:
-    """Phần 1 chương 3: Lưu Thái Tuế và tứ hóa của năm đang xem."""
+    """Chapter 3, part 1: Lưu Thái Tuế (annual Grand Duke star) and Tứ Hóa of the current year."""
     nam, tuoi, can = _nam_dang_xem(chart)
     thai = nam["sao_luu"]["Lưu Thái Tuế"]
     sao = "; ".join(f"{ten} tại {house.ten} ({house.vi_tri})" for ten, house in nam["sao_luu"].items())
@@ -964,7 +964,7 @@ def nguyen_lieu_nam(chart: Chart) -> str:
 
 
 def nguyen_lieu_chuong_3(chart: Chart, _nhan: dict, muc: list[tuple[str, str]]) -> str:
-    """Phần 2 chương 3: 12 tháng âm lịch, mỗi tháng kèm sao tại cung đó."""
+    """Chapter 3, part 2: 12 lunar months, each with the stars in its cung."""
     nam, tuoi, can = _nam_dang_xem(chart)
     thang_sinh, gio_sinh = thang_gio_sinh(chart)
     cac_thang = luu_nguyet(nam["tieu_han"].vi_tri, thang_sinh, gio_sinh)
@@ -1137,7 +1137,7 @@ def goi_openai(system: str, user: str) -> str:
 
 
 class ThuLai(Exception):
-    """Gemini bận hoặc model này không gọi được. Thử lại hoặc đổi model."""
+    """Gemini is busy or this model can't be called. Retry or switch model."""
 
     def __init__(self, code: int, thong_bao: str, doi_model: bool = False):
         super().__init__(thong_bao)
@@ -1207,8 +1207,8 @@ def goi_gemini(system: str, user: str) -> str:
             danh_sach.append(phu)
     loi_cuoi = ""
     for thu_tu, model in enumerate(danh_sach):
-        # Model chính đông người thì đổi sang model nhẹ sau một lần đợi ngắn.
-        # Model dự phòng mới đợi lâu hơn, vì đó là đường còn lại.
+        # If the main model is crowded, switch to a lighter model after one short wait.
+        # Only the fallback models wait longer, since they are the last option.
         cho = (15,) if thu_tu == 0 else CHO_LAI
         co_suy_nghi = True
         for lan, giay in enumerate((0, *cho), start=1):
@@ -1314,7 +1314,7 @@ TIEU_CHUONG = (
 
 
 def chuan_van(van: str) -> str:
-    """Bỏ tiêu đề chương do model tự thêm, để khi ghép không bị tách nhầm."""
+    """Drop chapter headings the model added itself, so merging doesn't split in the wrong place."""
     dong = []
     for raw in van.splitlines():
         chu = raw.strip()
@@ -1330,7 +1330,7 @@ def chuan_van(van: str) -> str:
 
 
 def sap_chuong(cac_phan: list[tuple[str, str]]) -> list[tuple[str, str]]:
-    """Luôn xếp Chương 1, 2, 3 rồi mới đến Chương 4."""
+    """Always order Chapters 1, 2, 3, then Chapter 4."""
     theo_ten = {tieu: chuan_van(van) for tieu, van in cac_phan}
     thu_tu: list[tuple[str, str]] = []
     da_ghi: set[str] = set()
@@ -1366,7 +1366,7 @@ def ghi_bai(cac_phan: list[tuple[str, str]]) -> None:
 
 
 def dung_kieu_ke() -> bool:
-    """Bài cũ viết theo kiểu liệt kê thì không nối tiếp, để viết lại bằng prompt kể chuyện."""
+    """Don't resume an old report written in list style, so it gets rewritten with the narrative prompt."""
     if not KET_QUA.is_file():
         return False
     dau = "\n".join(KET_QUA.read_text(encoding="utf-8").splitlines()[:8])
@@ -1381,7 +1381,7 @@ def dung_kieu_ke() -> bool:
 
 
 def doc_bai_cu() -> dict[str, str]:
-    """Đọc các phần đã viết để lần chạy sau nối tiếp, không gọi lại AI."""
+    """Read already-written parts so the next run resumes without calling the AI again."""
     if not KET_QUA.is_file():
         return {}
     van = KET_QUA.read_text(encoding="utf-8")
@@ -1444,7 +1444,7 @@ def chay_han(chart: Chart, nhan: dict, muc: list[tuple[str, str]], chi_xem: bool
 
 
 def nap_hoan_canh(tep: Path) -> None:
-    """Đọc đoạn hoàn cảnh đã dịch sẵn. Trang web không gửi câu chữ tự do của người xem."""
+    """Read the pre-translated circumstances passage. The website never sends the user's free-form text."""
     global HOAN_CANH, MA_HOAN_CANH
     if not tep.is_file():
         raise SystemExit("Không thấy file hoàn cảnh.")
@@ -1456,7 +1456,7 @@ def nap_hoan_canh(tep: Path) -> None:
 
 
 def chon_laso(laso: str | None) -> Chart:
-    """Chọn lá số. Bài ghi vào thư mục đặt theo ngày và giờ sinh."""
+    """Pick the lá số. The report goes to a folder named after the birth date and hour."""
     global KET_QUA, LASO_PATH, CHART
     if not laso:
         path = None
@@ -1487,7 +1487,7 @@ def xuat_report() -> None:
 
 
 def viet_mot_phan(viec: Viec) -> str:
-    """Chương 3 gọi hai lần: bức tranh cả năm, rồi mới tới 12 tháng."""
+    """Chapter 3 makes two calls: the whole-year overview, then the 12 months."""
     he = viec.he_thong or HE_THONG
     van = goi_ai(he, viec.noi_dung)
     if not viec.nguyen_lieu_sau:
@@ -1510,7 +1510,7 @@ def viet_mot_phan(viec: Viec) -> str:
 
 
 def viet_lai_bai() -> None:
-    """Đổi câu văn cho dễ đọc. Bảng vị trí hạn giữ nguyên vì đó là số đã tính."""
+    """Reword the prose for readability. The period-position table stays as is, since it holds computed values."""
     cu = doc_bai_cu()
     if not cu:
         raise SystemExit(f"Chưa có bài để viết lại: {KET_QUA}")

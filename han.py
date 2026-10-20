@@ -1,7 +1,8 @@
 """
-Tính lưu đại hạn, tiểu hạn và sao lưu theo Tử Vi Đẩu Số Tân Biên.
+Compute lưu đại hạn (yearly position within the decade period), tiểu hạn (annual period)
+and sao lưu (transiting stars) following Tử Vi Đẩu Số Tân Biên (the reference book).
 
-Chạy để kiểm tra:
+Run to self-check:
     .\\venv\\Scripts\\python.exe han.py
 """
 
@@ -12,7 +13,7 @@ from models import Chart, House, load_chart
 CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
 CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
 
-# 10.3. Nam nữ khác nhau ở chiều ghi, không phải ở cung khởi.
+# 10.3. Men and women differ in counting direction, not in the starting cung (palace).
 KHOI_TIEU_HAN = {
     "Dần": "Thìn",
     "Ngọ": "Thìn",
@@ -28,7 +29,7 @@ KHOI_TIEU_HAN = {
     "Mùi": "Sửu",
 }
 
-# 4.3. Bảng Lưu Lộc Tồn theo can của năm xem hạn.
+# 4.3. Lưu Lộc Tồn table by the Heavenly Stem (can) of the year being read.
 LOC_THEO_CAN = {
     "Giáp": "Dần",
     "Ất": "Mão",
@@ -42,7 +43,7 @@ LOC_THEO_CAN = {
     "Quý": "Tý",
 }
 
-# 4.4. Bảng Lưu Thiên Mã theo chi của năm xem hạn.
+# 4.4. Lưu Thiên Mã table by the Earthly Branch (chi) of the year being read.
 MA_THEO_CHI = {
     "Dần": "Thân",
     "Ngọ": "Thân",
@@ -58,7 +59,7 @@ MA_THEO_CHI = {
     "Mùi": "Tỵ",
 }
 
-# Sách nói sao lưu gặp đúng sao cố định cùng tên là trường hợp cần chú ý.
+# The book says a transiting star meeting the fixed star of the same name deserves attention.
 SAO_CO_DINH = {
     "Lưu Thái Tuế": "Thái Tuế",
     "Lưu Tang Môn": "Tang Môn",
@@ -78,7 +79,7 @@ def buoc(chi: str, so: int, thuan: bool) -> str:
 
 
 def nhom_thuan(chart: Chart) -> bool:
-    """Dương nam và âm nữ đi một lối. Âm nam và dương nữ đi lối kia."""
+    """Yang male and yin female go one way. Yin male and yang female go the other."""
     duong = "Dương" in chart.am_duong
     nam = chart.gioi_tinh == "Nam"
     return (duong and nam) or (not duong and not nam)
@@ -100,7 +101,7 @@ def can_chi_nam(can_goc: str, chi_goc: str, nam_goc: int, nam: int) -> tuple[str
 
 
 def luu_dai_han(chi_goc: str, lech: int, di_thuan: bool) -> str:
-    """Lệch 0 là năm đầu của đại hạn mười năm. Đã đối chiếu hai thí dụ trang 16-17."""
+    """Offset 0 is the first year of the ten-year đại hạn (decade period). Checked against the two examples on pages 16-17."""
     doi = buoc(chi_goc, 6, True)
     if lech == 0:
         return chi_goc
@@ -112,7 +113,7 @@ def luu_dai_han(chi_goc: str, lech: int, di_thuan: bool) -> str:
 
 
 def bang_tieu_han(chi_sinh: str, nu: bool) -> dict[str, str]:
-    """Chi của năm xem hạn -> chi của cung tiểu hạn."""
+    """Branch (chi) of the year being read -> branch of the tiểu hạn palace."""
     cung = KHOI_TIEU_HAN[chi_sinh]
     chi = chi_sinh
     bang = {}
@@ -208,18 +209,18 @@ def viet_bang(chart: Chart, danh: list[dict]) -> str:
 
 
 def _kiem_tra() -> None:
-    # Trang 16: dương nam, gốc Thìn, năm 27 tuổi nằm ở Hợi.
+    # Page 16: yang male, base Thìn, age 27 falls in Hợi.
     assert luu_dai_han("Thìn", 27 - 23, True) == "Hợi"
     assert luu_dai_han("Thìn", 2, True) == "Dậu"
-    # Trang 17: âm nam, gốc Dậu, năm 38 tuổi nằm ở Dần.
+    # Page 17: yin male, base Dậu, age 38 falls in Dần.
     assert luu_dai_han("Dậu", 38 - 34, False) == "Dần"
     assert luu_dai_han("Dậu", 2, False) == "Thìn"
-    # Con trai sinh năm Tý khởi Tý tại Tuất. Con gái sinh năm Ngọ khởi Ngọ tại Thìn, Mùi tại Mão.
+    # A boy born in a Tý year starts Tý at Tuất. A girl born in a Ngọ year starts Ngọ at Thìn, Mùi at Mão.
     assert bang_tieu_han("Tý", False)["Tý"] == "Tuất"
     assert bang_tieu_han("Tý", False)["Sửu"] == "Hợi"
     assert bang_tieu_han("Ngọ", True)["Ngọ"] == "Thìn"
     assert bang_tieu_han("Ngọ", True)["Mùi"] == "Mão"
-    # Năm Mùi: Thái Tuế tại Mùi, Tang Môn tại Dậu, Bạch Hổ tại Mão, Khốc tại Hợi, Hư tại Sửu.
+    # Mùi year: Thái Tuế at Mùi, Tang Môn at Dậu, Bạch Hổ at Mão, Khốc at Hợi, Hư at Sửu.
     muoi = sao_luu("Ất", "Mùi")
     assert muoi["Lưu Thái Tuế"] == "Mùi"
     assert muoi["Lưu Tang Môn"] == "Dậu"

@@ -1,10 +1,10 @@
 """
-Trang dán lá số. Bài hiện trên trang, nút bên cạnh tải file Word.
+Page for pasting a lá số (birth chart). The reading shows on the page; a button beside it downloads the Word file.
 
-Mở trang:
+Start the page:
     .\\venv\\Scripts\\python.exe web.py
 
-Rồi vào trình duyệt: http://127.0.0.1:8765
+Then open in a browser: http://127.0.0.1:8765
 """
 
 from __future__ import annotations
@@ -61,7 +61,7 @@ ROOT = Path(__file__).resolve().parent
 CONG = 8765
 KHOA = threading.Lock()
 KHOA_DEM = threading.Lock()
-# Số giây còn lại. Mỗi chương một mức, rồi giảm 1 mỗi giây cho tới khi xong.
+# Seconds remaining. Each chapter sets a level, then it drops by 1 every second until done.
 TIEN_DO = {"con": None}
 CAC_BUOC = (
     ("[1/4]", 405),
@@ -180,7 +180,7 @@ TEN_WORD = re.compile(r"^TuVi_(\d{4}-\d{2}-\d{2}_\d{2}h\d{2})\.docx$")
 
 
 def in_dam(van: str) -> str:
-    """Đổi chữ đậm và link nội bộ thành thẻ, sau khi đã thoát ký tự HTML."""
+    """Convert bold text and internal links to tags, after HTML-escaping."""
     phan = re.split(r"(\[[^\]]+\]\(/[^)]+\))", van)
     roi = []
     for mot in phan:
@@ -204,7 +204,7 @@ def o_bang(dong: str) -> list[str]:
 
 
 def gop_mot_hang(dong: list[str], i: int) -> tuple[str, int]:
-    """Một hàng bảng đôi khi bị xuống dòng giữa ô. Gom đến khi gặp dấu | đóng hàng."""
+    """A table row sometimes wraps mid-cell. Join lines until the closing | of the row."""
     gop = dong[i].strip()
     i += 1
     while not gop.endswith("|") and i < len(dong):
@@ -231,7 +231,7 @@ def html_bang(hang: list[list[str]]) -> str:
 
 
 def html_bai(van: str) -> str:
-    """Đổi bài markdown thành HTML để hiện trên trang. Chữ lấy từ bài đã thoát ký tự."""
+    """Convert the markdown reading to HTML for the page. Text comes from the escaped reading."""
     dong = van.splitlines()
     khoi: list[str] = []
     i = 0
@@ -291,7 +291,7 @@ def giam_moi_giay() -> None:
 
 
 def chay_viet(lenh: list[str], moi_truong: dict) -> tuple[int, str]:
-    """Chạy phần viết bài và chỉnh số giây còn lại theo chương đang viết."""
+    """Run the report writer and adjust the seconds remaining based on the chapter being written."""
     dat_con(CAC_BUOC[0][1] + 25)
     tien = subprocess.Popen(
         lenh,
@@ -318,7 +318,7 @@ def chay_viet(lenh: list[str], moi_truong: dict) -> tuple[int, str]:
 
 
 def phan_tich_bai(bai: str, dap: dict):
-    """Đổi bài dán thành lá số, viết báo cáo, trả file Word, tên tải về và HTML để hiện trang."""
+    """Turn the pasted text into a lá số, write the report, and return the Word file, download name, and page HTML."""
     chu = bai.strip()
     if len(chu) < 80:
         raise ValueError("Bài dán còn quá ngắn. Hãy dán đủ thông tin, tứ trụ và bảng 12 cung.")
@@ -407,7 +407,7 @@ class TraLoi(BaseHTTPRequestHandler):
         return moi, f"khach={moi}; Path=/; HttpOnly; SameSite=Lax{khoa}"
 
     def nguoi_dang_nhap(self) -> tuple[int | None, str, str]:
-        """Trả mã tài khoản, mã phiên khách, và cookie khách cần gắn nếu mới tạo."""
+        """Return the account ID, guest session ID, and the guest cookie to set if newly created."""
         cap = tai_khoan_tu_token(self.token_phien())
         ma_tk = None if cap is None else cap[0]
         ma_phien, banh = self.khach()

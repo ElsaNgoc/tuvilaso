@@ -1,10 +1,10 @@
 """
-Bước 5: gộp bài phân tích thành file Word.
+Step 5: combine the analysis into a Word file.
 
     .\\venv\\Scripts\\python.exe xuat_word.py
     .\\venv\\Scripts\\python.exe xuat_word.py --laso laso\\ten_file.json
 
-File ra nằm trong thư mục output\\năm-tháng-ngày_giờsinh\\TuVi_Report.docx
+The output file goes to output\\năm-tháng-ngày_giờsinh\\TuVi_Report.docx (year-month-day_birthhour)
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ def gan_font(run, dam: bool = False, nghieng: bool = False) -> None:
 
 
 def mo_link(van: str) -> str:
-    """Đổi link trong bài thành chữ và địa chỉ trang, để file Word bấm được bằng mắt."""
+    """Turn links in the text into label plus page address, so the Word file is usable by reading."""
     return re.sub(
         r"\[([^\]]+)\]\((/[^)]+)\)",
         lambda khop: f"{khop.group(1)} (http://127.0.0.1:8765{khop.group(2)})",
@@ -68,7 +68,7 @@ def o_bang(dong: str) -> list[str]:
 
 
 def gop_mot_hang(dong: list[str], i: int) -> tuple[str, int]:
-    """Một hàng bảng đôi khi bị xuống dòng giữa ô. Gom đến khi gặp dấu | đóng hàng."""
+    """A table row sometimes breaks mid-cell. Collect lines until a closing | ends the row."""
     gop = dong[i].strip()
     i += 1
     while not gop.endswith("|") and i < len(dong):

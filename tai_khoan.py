@@ -1,4 +1,4 @@
-"""Tạo tài khoản, đăng nhập và phiên làm việc."""
+"""Account creation, login and sessions."""
 
 from __future__ import annotations
 
@@ -79,7 +79,7 @@ def dang_ky(ten: str, mat_khau: str) -> tuple[str, str]:
 
 
 def dang_nhap_google(token: str) -> tuple[str, str]:
-    """Nhận mã Google gửi về, tạo tài khoản nếu Gmail này chưa có."""
+    """Receive the code Google sends back; create an account if this Gmail is new."""
     import os
 
     ma_trang = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
