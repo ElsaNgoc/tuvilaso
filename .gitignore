@@ -6,5 +6,6 @@ __pycache__/
 du_lieu/*.db
 du_lieu/word/
 output/
-laso/vua_dan.json
-laso/vua_dan.txt
+laso/
+tai_lieu/*.pdf
+tai_lieu/TuVi_TanBien_Data.md

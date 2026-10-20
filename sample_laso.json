@@ -1,0 +1,346 @@
+{
+  "gioi_tinh": "Nữ",
+  "ngay_sinh": "20/2/2004",
+  "gio_hanh_chinh": "9h15",
+  "gio_mat_troi": "9h21",
+  "am_lich": "Năm Giáp Thân, ngày 01 tháng 02, giờ Tỵ",
+  "noi_sinh": "Hanoi, Vietnam",
+  "am_duong": "Dương Nữ",
+  "ban_menh": "Tuyền Trung Thủy",
+  "cuc": "Kim Tứ Cục",
+  "khoi_van_tuoi": 4,
+  "than_cu": "QUAN",
+  "dac_diem": [
+    "Âm dương thuận lý",
+    "Sinh mùa Xuân, không được mùa sinh",
+    "Cục sinh mệnh"
+  ],
+  "nien_hoa": {
+    "loc": "Liêm Trinh tại PHỤ",
+    "quyen": "Phá Quân tại PHỤ",
+    "khoa": "Vũ Khúc tại NÔ",
+    "ky": "Thái Dương tại DI"
+  },
+  "cung": [
+    {
+      "ten": "MỆNH",
+      "vi_tri": "Thân",
+      "can_chi": "Nhâm Thân",
+      "dai_han_tu": 4,
+      "dai_han_den": 13,
+      "vo_chinh_dieu": true,
+      "sao_xung": [
+        "Thái Dương",
+        "Cự Môn"
+      ],
+      "phu_tinh": [
+        "Hữu Bật",
+        "Thái Tuế",
+        "Phi Liêm",
+        "Thiên Thọ",
+        "Tuyệt"
+      ],
+      "triet": true,
+      "phi_loc": "TÀI",
+      "phi_quyen": "TỬ",
+      "phi_khoa": "PHỐI",
+      "phi_ky": "NÔ"
+    },
+    {
+      "ten": "PHỤ",
+      "vi_tri": "Dậu",
+      "can_chi": "Quý Dậu",
+      "dai_han_tu": 114,
+      "dai_han_den": 123,
+      "chinh_tinh": [
+        "Liêm Trinh",
+        "Phá Quân"
+      ],
+      "phu_tinh": [
+        "Hóa Lộc",
+        "Hóa Quyền",
+        "Thiên Không",
+        "Đào Hoa",
+        "Thiếu Dương",
+        "Tấu Thư",
+        "Lưu Hà",
+        "Phá Toái",
+        "Thiên Phúc",
+        "Địa Giải",
+        "Mộ"
+      ],
+      "triet": true,
+      "phi_loc": "PHỤ",
+      "phi_quyen": "DI",
+      "phi_khoa": "QUAN",
+      "phi_ky": "NÔ",
+      "tu_hoa": "Tự hóa Lộc (Phá Quân)",
+      "phuong_vien": "9 Kỵ (D)"
+    },
+    {
+      "ten": "PHÚC",
+      "vi_tri": "Tuất",
+      "can_chi": "Giáp Tuất",
+      "dai_han_tu": 104,
+      "dai_han_den": 113,
+      "vo_chinh_dieu": true,
+      "sao_xung": [
+        "Thiên Cơ",
+        "Thiên Lương"
+      ],
+      "phu_tinh": [
+        "Thiên Khốc",
+        "Tang Môn",
+        "Tướng Quân",
+        "Phong Cáo",
+        "Quốc Ấn",
+        "Thiên Giải",
+        "Địa Võng",
+        "Âm Sát",
+        "Dương Sát",
+        "Tử"
+      ],
+      "phi_loc": "PHỤ",
+      "phi_quyen": "PHỤ",
+      "phi_khoa": "NÔ",
+      "phi_ky": "DI"
+    },
+    {
+      "ten": "ĐIỀN",
+      "vi_tri": "Hợi",
+      "can_chi": "Ất Hợi",
+      "dai_han_tu": 94,
+      "dai_han_den": 103,
+      "chinh_tinh": [
+        "Thiên Phủ"
+      ],
+      "phu_tinh": [
+        "Thiên Hình",
+        "Thiếu Âm",
+        "Tiểu Hao",
+        "Cô Thần",
+        "Bệnh"
+      ],
+      "phi_loc": "TÀI",
+      "phi_quyen": "TÀI",
+      "phi_khoa": "TỬ",
+      "phi_ky": "QUAN",
+      "tu_hoa": "Hướng tâm Khoa (Tử Vi)"
+    },
+    {
+      "ten": "QUAN",
+      "vi_tri": "Tý",
+      "can_chi": "Bính Tý",
+      "dai_han_tu": 84,
+      "dai_han_den": 93,
+      "chinh_tinh": [
+        "Thiên Đồng",
+        "Thái Âm"
+      ],
+      "phu_tinh": [
+        "Văn Khúc",
+        "Tam Thai",
+        "Quan Phù",
+        "Thanh Long",
+        "Long Trì",
+        "Suy"
+      ],
+      "than_cu": true,
+      "phi_loc": "QUAN",
+      "phi_quyen": "TÀI",
+      "phi_khoa": "DI",
+      "phi_ky": "PHỤ",
+      "tu_hoa": "Tự hóa Lộc (Thiên Đồng)"
+    },
+    {
+      "ten": "NÔ",
+      "vi_tri": "Sửu",
+      "can_chi": "Đinh Sửu",
+      "dai_han_tu": 74,
+      "dai_han_den": 83,
+      "chinh_tinh": [
+        "Vũ Khúc",
+        "Tham Lang"
+      ],
+      "phu_tinh": [
+        "Đà La",
+        "Thiên Khôi",
+        "Hóa Khoa",
+        "Tử Phù",
+        "Lực Sĩ",
+        "Thiên Hỉ",
+        "Nguyệt Đức",
+        "Thiên Thương",
+        "Đế Vượng"
+      ],
+      "phi_loc": "QUAN",
+      "phi_quyen": "QUAN",
+      "phi_khoa": "TÀI",
+      "phi_ky": "DI",
+      "phuong_vien": "1 Lộc (A)"
+    },
+    {
+      "ten": "DI",
+      "vi_tri": "Dần",
+      "can_chi": "Bính Dần",
+      "dai_han_tu": 64,
+      "dai_han_den": 73,
+      "chinh_tinh": [
+        "Thái Dương",
+        "Cự Môn"
+      ],
+      "phu_tinh": [
+        "Văn Xương",
+        "Hóa Kị",
+        "Lộc Tồn",
+        "Bát Tọa",
+        "Thiên Mã",
+        "Thiên Hư",
+        "Tuế Phá",
+        "Bác Sĩ",
+        "Thai Phụ",
+        "Phượng Các",
+        "Giải Thần",
+        "Đẩu Quân",
+        "Dương Đức",
+        "Lâm Quan"
+      ],
+      "phi_loc": "QUAN",
+      "phi_quyen": "TÀI",
+      "phi_khoa": "DI",
+      "phi_ky": "PHỤ",
+      "tu_hoa": "Tự hóa Khoa (Văn Xương)",
+      "phuong_vien": "10 Lộc (A)"
+    },
+    {
+      "ten": "TẬT",
+      "vi_tri": "Mão",
+      "can_chi": "Đinh Mão",
+      "dai_han_tu": 54,
+      "dai_han_den": 63,
+      "chinh_tinh": [
+        "Thiên Tướng"
+      ],
+      "phu_tinh": [
+        "Kình Dương",
+        "Địa Không",
+        "Thiên Diêu",
+        "Long Đức",
+        "Quan Phủ",
+        "Thiên Y",
+        "Thiên Sứ",
+        "Quan Đới"
+      ],
+      "phi_loc": "QUAN",
+      "phi_quyen": "QUAN",
+      "phi_khoa": "TÀI",
+      "phi_ky": "DI"
+    },
+    {
+      "ten": "TÀI",
+      "vi_tri": "Thìn",
+      "can_chi": "Mậu Thìn",
+      "dai_han_tu": 44,
+      "dai_han_den": 53,
+      "chinh_tinh": [
+        "Thiên Cơ",
+        "Thiên Lương"
+      ],
+      "phu_tinh": [
+        "Bạch Hổ",
+        "Phục Binh",
+        "Hoa Cái",
+        "Thiên Tài",
+        "Thiên La",
+        "Mộc Dục"
+      ],
+      "phi_loc": "NÔ",
+      "phi_quyen": "QUAN",
+      "phi_khoa": "MỆNH",
+      "phi_ky": "TÀI",
+      "tu_hoa": "Tự hóa Kỵ (Thiên Cơ)",
+      "phuong_vien": "2 Lộc (A), 1 Kỵ (D)"
+    },
+    {
+      "ten": "TỬ",
+      "vi_tri": "Tỵ",
+      "can_chi": "Kỷ Tỵ",
+      "dai_han_tu": 34,
+      "dai_han_den": 43,
+      "chinh_tinh": [
+        "Tử Vi",
+        "Thất Sát"
+      ],
+      "phu_tinh": [
+        "Phúc Đức",
+        "Đại Hao",
+        "Kiếp Sát",
+        "Văn Tinh",
+        "Thiên Trù",
+        "Thiên Đức",
+        "Âm Đức",
+        "Trường Sinh"
+      ],
+      "phi_loc": "NÔ",
+      "phi_quyen": "NÔ",
+      "phi_khoa": "TÀI",
+      "phi_ky": "QUAN"
+    },
+    {
+      "ten": "PHỐI",
+      "vi_tri": "Ngọ",
+      "can_chi": "Canh Ngọ",
+      "dai_han_tu": 24,
+      "dai_han_den": 33,
+      "vo_chinh_dieu": true,
+      "sao_xung": [
+        "Thiên Đồng",
+        "Thái Âm"
+      ],
+      "phu_tinh": [
+        "Hỏa Tinh",
+        "Linh Tinh",
+        "Tả Phụ",
+        "Điếu Khách",
+        "Bệnh Phù",
+        "Dưỡng"
+      ],
+      "tuan": true,
+      "phi_loc": "DI",
+      "phi_quyen": "NÔ",
+      "phi_khoa": "QUAN",
+      "phi_ky": "QUAN",
+      "tu_hoa": "Hướng tâm Khoa (Thiên Đồng), Hướng tâm Kỵ (Thái Âm)"
+    },
+    {
+      "ten": "BÀO",
+      "vi_tri": "Mùi",
+      "can_chi": "Tân Mùi",
+      "dai_han_tu": 14,
+      "dai_han_den": 23,
+      "vo_chinh_dieu": true,
+      "sao_xung": [
+        "Vũ Khúc",
+        "Tham Lang"
+      ],
+      "phu_tinh": [
+        "Địa Kiếp",
+        "Thiên Việt",
+        "Ân Quang",
+        "Thiên Quý",
+        "Trực Phù",
+        "Hỉ Thần",
+        "Đường Phù",
+        "Hồng Loan",
+        "Quả Tú",
+        "Thiên Quan",
+        "Thai"
+      ],
+      "tuan": true,
+      "phi_loc": "DI",
+      "phi_quyen": "DI",
+      "phi_khoa": "QUAN",
+      "phi_ky": "DI"
+    }
+  ]
+}
